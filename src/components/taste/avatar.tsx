@@ -13,7 +13,7 @@ const TONE: Record<AvatarTone | "pass", string> = {
   blush: "bg-brand-soft text-brand-soft-foreground",
   pine: "bg-pine-soft text-pine-soft-foreground",
   amber: "bg-amber-soft text-amber-soft-foreground",
-  // On the campus pass (already a hero card): the pine circle the initials used.
+  // On the Friend of Handi card (already a hero card): the pine circle the initials used.
   pass: "bg-hero text-hero-accent",
 };
 
@@ -35,7 +35,7 @@ export function Avatar({
   initials: string;
   className?: string;
   iconClassName?: string;
-  /** Override the avatar's own tone ("pass" on the campus pass). */
+  /** Override the avatar's own tone ("pass" on the Friend of Handi card). */
   tone?: AvatarTone | "pass";
 }) {
   const avatar = getAvatar(id);

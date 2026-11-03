@@ -2,13 +2,15 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { MapPin, Search, SearchX, X } from "lucide-react";
+import { MapPin, Search, SearchX, SlidersHorizontal, X } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
+import { SectionTitle } from "@/components/handi/section-title";
 import { getRestaurantCardSlides } from "@/lib/data/dish-photos";
 import type { RestaurantMenuStats, SearchableDish } from "@/lib/data/restaurants";
 import type { TrendingDish } from "@/lib/data/trending";
 import type { Restaurant } from "@/lib/data/types";
 import {
+  activeCount,
   applyFilters,
   EMPTY_FILTERS,
   FOOD_TYPES,
@@ -30,13 +32,12 @@ import { PromoCard } from "./promo-card";
 import { RestaurantCard } from "./restaurant-card";
 
 /**
- * Everything on Home below the header: the search pill, "What's on your
- * mind?" food-type tiles, the sticky quick-filter chips (+ the filter
- * sheet), and then either
- *   - browsing: the pine promo (while ordering is open), the "Campus
- *     favourites" photo row and every restaurant, or
- *   - searching or filtering: a live dish grid and the restaurants that
- *     serve something in it.
+ * Everything on Home below the header: the search pill (with the filter
+ * button), and then either
+ *   - browsing: Handi's scene (while ordering is open), the "Hungry for?"
+ *     plates, the "Handi's picks" row and every kitchen, or
+ *   - searching or filtering: the plates, the sticky quick-filter chips, a
+ *     live dish grid and the kitchens that serve something in it.
  * Filters live in the URL (lib/home-filters.ts); the search text is local.
  */
 export function RestaurantList({
@@ -62,11 +63,11 @@ export function RestaurantList({
   menuStats: Record<string, RestaurantMenuStats>;
   /** getDishOrderCounts() — card photo order, "Recommended" sort and the Popular chip. */
   dishOrderCounts: Record<string, number>;
-  /** getTrendingDishes() — ranked first in the "Campus favourites" photo row. */
+  /** getTrendingDishes() — ranked first in the "Handi's picks" row. */
   trendingDishes: TrendingDish[];
   /** deliveryWindow() for an order placed now — the promo card's delivery line. */
   slot: { lead: string; time: string };
-  /** Food-type keys to lead "What's on your mind?": the taste profile's
+  /** Food-type keys to lead "Hungry for?": the taste profile's
    *  cravings, then what the student's hearted dishes point to (cravingOrder()). */
   cravings?: string[];
 }) {
@@ -188,29 +189,47 @@ export function RestaurantList({
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search biryani, combos, restaurants…"
-          className="h-14 w-full rounded-full border bg-card/90 pr-12 pl-13 text-base shadow-card backdrop-blur outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/80 [&::-webkit-search-cancel-button]:hidden"
+          placeholder="Search dishes…"
+          className="h-14 w-full rounded-full border bg-card/90 pr-14 pl-13 [&:not(:placeholder-shown)]:pr-24 text-base shadow-card backdrop-blur outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/80 [&::-webkit-search-cancel-button]:hidden"
         />
         {query && (
           <button
             type="button"
             onClick={() => setQuery("")}
             aria-label="Clear search"
-            className="absolute top-1/2 right-3.5 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-secondary text-foreground outline-none hover:bg-primary hover:text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring/80"
+            className="absolute top-1/2 right-14 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-secondary text-foreground outline-none hover:bg-primary hover:text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring/80"
           >
             <X className="size-4" aria-hidden="true" />
           </button>
         )}
+        <button
+          type="button"
+          onClick={() => setSheetOpen(true)}
+          aria-haspopup="dialog"
+          aria-label={activeCount(filters) ? `Filters, ${activeCount(filters)} on` : "Filters"}
+          className="absolute top-1/2 right-2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-secondary text-foreground outline-none hover:bg-border focus-visible:ring-2 focus-visible:ring-ring/80"
+        >
+          <SlidersHorizontal className="size-4.5" aria-hidden="true" />
+          {activeCount(filters) > 0 && (
+            <span className="surface-primary absolute -top-0.5 -right-0.5 flex size-4.5 items-center justify-center rounded-full bg-primary text-[0.65rem] font-bold text-primary-foreground tabular-nums">
+              {activeCount(filters)}
+            </span>
+          )}
+        </button>
       </label>
+
+      {!showResults && orderingEnabled && <PromoCard slot={slot} />}
 
       <FoodTypeRail types={foodTypes} selected={filters.type} onSelect={(type) => setFilters({ ...filters, type })} />
 
-      <FilterBar
-        filters={filters}
-        onChange={setFilters}
-        onOpenSheet={() => setSheetOpen(true)}
-        showPopular={showPopular}
-      />
+      {showResults && (
+        <FilterBar
+          filters={filters}
+          onChange={setFilters}
+          onOpenSheet={() => setSheetOpen(true)}
+          showPopular={showPopular}
+        />
+      )}
       <FilterSheet
         open={sheetOpen}
         onOpenChange={setSheetOpen}
@@ -223,12 +242,7 @@ export function RestaurantList({
       {/* Where "scroll to results" lands: just under the sticky chips. */}
       <div ref={resultsTopRef} aria-hidden="true" className="scroll-mt-16" />
 
-      {!showResults && (
-        <>
-          {orderingEnabled && <PromoCard slot={slot} />}
-          <PopularRail rail={rail} />
-        </>
-      )}
+      {!showResults && <PopularRail rail={rail} />}
 
       {showResults && (
         <section aria-labelledby="dish-results" className="mt-4">
@@ -255,14 +269,9 @@ export function RestaurantList({
 
       {visible.length > 0 && (
         <>
-          <div className="mt-9 flex items-end justify-between gap-3">
-            <h2 className="font-display text-title font-bold">
-              {showResults ? "Restaurants" : "Restaurants near campus"}
-            </h2>
-            <span className="shrink-0 pb-0.5 text-sm text-muted-foreground tabular-nums">
-              {showResults ? `${visible.length} of ${restaurants.length}` : `${restaurants.length} kitchens`}
-            </span>
-          </div>
+          <SectionTitle className="mt-8" aside={showResults ? `${visible.length} of ${restaurants.length}` : undefined}>
+            {showResults ? "Kitchens" : "Kitchens near campus"}
+          </SectionTitle>
           {!showResults && (
             <p className="mt-1.5 flex items-center gap-1.5 text-sm text-muted-foreground">
               <MapPin className="size-4 shrink-0 text-rose" aria-hidden="true" />

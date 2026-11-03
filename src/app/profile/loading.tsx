@@ -11,10 +11,10 @@ export default function Loading() {
       <span className="sr-only">Loading your profile…</span>
 
       <ViewTransition {...REVEAL_EXIT}>
-        <div className="rounded-3xl surface-hero bg-hero p-5">
-          <div className="flex items-center gap-4">
-            <Skeleton className="size-16 shrink-0 rounded-2xl bg-hero-foreground/10" />
-            <div className="min-w-0 flex-1">
+        <div className="arch-card surface-hero bg-hero p-5 pt-8">
+          <div className="flex flex-col items-center gap-2">
+            <Skeleton className="size-24 shrink-0 rounded-full bg-hero-foreground/10" />
+            <div className="flex flex-col items-center">
               <Skeleton className="h-6 w-40 bg-hero-foreground/10" />
               <Skeleton className="mt-2 h-4 w-32 bg-hero-foreground/10" />
             </div>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ViewTransition } from "react";
 import { Bell, Flame, Lock, Mail, MapPin, SunMoon, Volume2 } from "lucide-react";
 import { IconTile } from "@/components/icon-tile";
+import { SectionTitle } from "@/components/handi/section-title";
 import { MemberCard } from "@/components/profile/member-card";
 import { LikedDishes } from "@/components/profile/liked-dishes";
 import { initialsOf } from "@/components/taste/avatar";
@@ -90,9 +91,9 @@ export default async function ProfilePage() {
 
           <LikedDishes dishes={liked} />
 
-          <h2 className="mt-8 font-display text-title font-bold">Your details</h2>
+          <SectionTitle className="mt-8">Your details</SectionTitle>
           <p className="text-sm text-muted-foreground">Tap a field to edit it.</p>
-          <div className="mt-3 divide-y overflow-hidden rounded-[1.5rem] border bg-card shadow-card">
+          <div className="mt-3 paper divide-y divide-dashed overflow-hidden border bg-card shadow-card">
             <EditableName initialValue={profile.full_name} />
             <EditablePhone
               initialValue={profile.phone}
@@ -135,8 +136,8 @@ export default async function ProfilePage() {
             </div>
           </div>
 
-          <h2 className="mt-8 font-display text-title font-bold">Settings</h2>
-          <div className="mt-3 divide-y overflow-hidden rounded-[1.5rem] border bg-card shadow-card">
+          <SectionTitle className="mt-8">Settings</SectionTitle>
+          <div className="mt-3 paper divide-y divide-dashed overflow-hidden border bg-card shadow-card">
             <div className="flex items-center gap-3 px-5 py-3.5">
               <IconTile>
                 <SunMoon className="size-5" aria-hidden="true" />

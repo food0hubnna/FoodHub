@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Fraunces, Grey_Qo, Love_Light, Plus_Jakarta_Sans, Sirivennela } from "next/font/google";
+import { Baloo_2, Grey_Qo, Love_Light, Plus_Jakarta_Sans, Sirivennela } from "next/font/google";
 import { AppSplash } from "@/components/splash/app-splash";
 import { SPLASH_DISABLED } from "@/components/splash/config";
 import { SPLASH_INIT_SCRIPT } from "@/components/splash/init-script";
@@ -19,27 +19,14 @@ const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
 });
 
-// Display face. Only the SOFT axis (rounded terminals, set in
-// globals.css) on top of weight: adding opsz as well took the preloaded
-// Fraunces file from 62KB to 121KB, for a display cut this app's bold
-// headings barely show.
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+// Handi's voice: round, friendly, a little desi. Every heading and price.
+const baloo = Baloo_2({
+  variable: "--font-baloo",
   subsets: ["latin"],
-  axes: ["SOFT"],
 });
 
-// Display pieces: Cormorant Garamond for
-// section and page headings (font-display), and three handwriting faces the
-// student's name is drawn in, in turn (ScriptName). Free
-// lookalikes for Del Rose / Rosething, whose licences don't allow the web.
+// The handwriting faces the student's name is drawn in, in turn (ScriptName).
 // Not preloaded — each has a fallback.
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  preload: false,
-});
 const loveLight = Love_Light({ variable: "--font-love-light", subsets: ["latin"], weight: "400", preload: false });
 const greyQo = Grey_Qo({ variable: "--font-grey-qo", subsets: ["latin"], weight: "400", preload: false });
 // Sirivennela draws the name in Telugu, so it needs its Telugu glyphs — with
@@ -113,7 +100,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       // "dark" class / colorScheme style, and the splash-init script
       // data-splash, before React hydrates — expected, not a real mismatch.
       suppressHydrationWarning
-      className={`${jakarta.variable} ${fraunces.variable} ${cormorant.variable} ${loveLight.variable} ${greyQo.variable} ${sirivennela.variable} h-full antialiased`}
+      className={`${jakarta.variable} ${baloo.variable} ${loveLight.variable} ${greyQo.variable} ${sirivennela.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {/* Raw inline <script>, not next/script: beforeInteractive inline

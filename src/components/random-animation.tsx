@@ -45,12 +45,22 @@ export function RandomAnimation({
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) video.play().catch(() => {});
+    let onScreen = false;
+    const sync = () => {
+      if (onScreen && !document.hidden) video.play().catch(() => {});
       else video.pause();
+    };
+    const observer = new IntersectionObserver(([entry]) => {
+      onScreen = entry.isIntersecting;
+      sync();
     });
     observer.observe(video);
-    return () => observer.disconnect();
+    // A page opened in a background tab can't start playing, so try again on the way back.
+    document.addEventListener("visibilitychange", sync);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", sync);
+    };
   }, [src]);
 
   return (

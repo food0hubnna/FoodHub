@@ -94,7 +94,7 @@ const SIGNATURE_DISHES: Record<string, string[]> = {
   "Spice Magic Biryanis": ["Chicken Fry Combo Pack", "Chicken Dum Bucket", "Chicken 65 Biryani"],
 };
 
-/** A restaurant's hand-picked signature dishes (by name) — also fill Home's "Campus favourites" row. */
+/** A restaurant's hand-picked signature dishes (by name) — also fill Home's "Handi's picks" row. */
 export function getSignatureDishes(restaurantName: string): string[] {
   return SIGNATURE_DISHES[restaurantName] ?? [];
 }

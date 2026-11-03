@@ -12,7 +12,7 @@ export function PromoCard({ slot }: { slot: { lead: string; time: string } }) {
   return (
     <section
       aria-label="Hot food, at Main Gate"
-      className="surface-hero glow-hero relative mt-6 min-h-[12.5rem] overflow-hidden rounded-[1.75rem] bg-hero p-5 text-hero-foreground"
+      className="surface-hero glow-hero paper relative mt-6 min-h-[12.5rem] overflow-hidden bg-hero p-5 text-hero-foreground"
     >
       <RandomAnimation
         set="banner"
@@ -30,7 +30,7 @@ export function PromoCard({ slot }: { slot: { lead: string; time: string } }) {
         <p className="mt-2.5 flex items-start gap-1.5 text-sm font-semibold">
           <Clock className="mt-0.5 size-4 shrink-0 text-hero-accent" aria-hidden="true" />
           <span>
-            {slot.lead} <span className="text-hero-accent">{slot.time}</span>
+            {slot.lead} <span className="whitespace-nowrap text-hero-accent">{slot.time}</span>
           </span>
         </p>
       </div>

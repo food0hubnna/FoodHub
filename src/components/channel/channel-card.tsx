@@ -5,7 +5,7 @@ import { WHATSAPP_GROUP_URL } from "@/lib/support";
 /** Profile: the FoodHub WhatsApp group, always findable after the Home card. */
 export function ChannelCard() {
   return (
-    <div className="mt-4 flex items-center gap-3 rounded-[1.5rem] border bg-card px-5 py-4 shadow-card">
+    <div className="mt-4 flex items-center gap-3 paper border bg-card px-5 py-4 shadow-card">
       <IconTile>
         <MessageCircle className="size-5 text-success" aria-hidden="true" />
       </IconTile>

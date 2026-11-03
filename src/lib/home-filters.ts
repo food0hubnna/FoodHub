@@ -8,7 +8,7 @@
 import type { SearchableDish } from "@/lib/data/restaurants";
 import type { Restaurant } from "@/lib/data/types";
 
-// ---- Food types ("What's on your mind?") -----------------------------------
+// ---- Food types ("Hungry for?") -----------------------------------
 
 export type FoodType = {
   key: string;

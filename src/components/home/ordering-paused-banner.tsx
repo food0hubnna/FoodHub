@@ -8,7 +8,7 @@ import type { OrderingState } from "@/lib/ordering";
  */
 export function OrderingPausedBanner({ ordering }: { ordering: OrderingState }) {
   return (
-    <div className="surface-hero relative mt-6 min-h-[12.5rem] overflow-hidden rounded-[1.75rem] bg-hero p-5 text-hero-foreground">
+    <div className="surface-hero paper relative mt-6 min-h-[12.5rem] overflow-hidden bg-hero p-5 text-hero-foreground">
       <RandomAnimation
         set="closed"
         sizes="(max-width: 448px) 100vw, 448px"

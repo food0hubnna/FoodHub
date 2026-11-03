@@ -4,12 +4,13 @@ import { useRef, useState, type MouseEvent, type PointerEvent } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Receipt, User, Utensils } from "lucide-react";
+import { HandiSticker } from "@/components/handi/handi-says";
 import { cn } from "@/lib/utils";
 
 const TABS = [
   { href: "/", label: "Food", Icon: Utensils },
   { href: "/orders", label: "Orders", Icon: Receipt },
-  { href: "/profile", label: "Profile", Icon: User },
+  { href: "/profile", label: "Me", Icon: User },
 ] as const;
 
 /** Drill-down screens the bar slides away on (and back in from). */
@@ -30,16 +31,16 @@ type Drag = { pointerId: number; startX: number; dragging: boolean };
 /**
  * The floating bottom bar for the three top-level student screens. It
  * lives in the root layout rather than in each page, so it stays mounted
- * across tab changes: the lit amber pill slides (with a little spring) to
- * the tab you tapped, and the new tab's icon pops in. It shows on exactly
+ * across tab changes: the bar's top edge swells up around Handi, and the swell
+ * slides (with a spring) to the tab you tapped, Handi standing in for its icon. It shows on exactly
  * "/", "/orders" and "/profile"; on a menu or an order's ticket it slides
  * down out of the way (and comes back up when you return); everywhere else
  * (sign-in, welcome, admin, legal pages) it isn't rendered at all.
  *
  * It's also a real slider: press anywhere on the bar and slide sideways —
- * the pill lifts and follows your finger, the tab under it lights up (with
- * a tiny buzz on phones that support it), and letting go snaps the pill to
- * that tab and opens it. A press that doesn't move sideways is still an
+ * Handi lifts and follows your finger, the tab under it lights up (with
+ * a tiny buzz on phones that support it), and letting go lands on that tab
+ * and opens it. A press that doesn't move sideways is still an
  * ordinary tap; vertical movement still scrolls the page (touch-action:
  * pan-y). Keyboard users get the plain links.
  *
@@ -145,27 +146,34 @@ export function TabBar() {
         onPointerMove={onPointerMove}
         onPointerUp={(e) => endDrag(e, true)}
         onPointerCancel={(e) => endDrag(e, false)}
-        className="pointer-events-auto relative mx-auto grid w-full max-w-md touch-pan-y grid-cols-3 rounded-full border bg-card/85 p-1.5 shadow-raised backdrop-blur-xl select-none"
+        className="pointer-events-auto relative mx-auto grid w-full max-w-md touch-pan-y grid-cols-3 paper border bg-card p-1.5 shadow-raised select-none"
       >
-        {/* The lit pill. The outer span slides between tabs (translateX by
-            whole tab widths — the pill is exactly one tab wide), or follows
-            the finger 1:1 while dragged; the inner one, keyed by tab,
-            squashes and settles as it lands, and lifts while held. */}
+        {/* The swell. The outer span slides between tabs (translateX by whole
+            tab widths — it's exactly one tab wide), or follows the finger 1:1
+            while dragged. The curve shares the bar's fill and border, and runs
+            a little into the bar to hide the border under it, so the two read
+            as one piece. Handi pops as it lands and lifts while held. */}
         <span
           aria-hidden="true"
           className={cn(
-            "absolute inset-y-1.5 left-1.5 w-[calc((100%-0.75rem)/3)]",
+            "pointer-events-none absolute inset-y-0 left-1.5 z-20 w-[calc((100%-0.75rem)/3)]",
             !dragging && "transition-transform duration-(--dur-slow) ease-spring",
           )}
           style={{ transform: held ? `translateX(${held.x}px)` : `translateX(${pill * 100}%)` }}
         >
+          <svg viewBox="0 0 88 26" className="absolute -top-6 left-1/2 h-[1.625rem] w-[5.5rem] -translate-x-1/2 overflow-visible">
+            <path d="M0 24C20 24 22 0 44 0S68 24 88 24V26H0Z" fill="var(--card)" />
+            <path d="M0 24C20 24 22 0 44 0S68 24 88 24" fill="none" stroke="var(--border)" />
+          </svg>
+          <span className="absolute -top-3 left-1/2 size-16 -translate-x-1/2 rounded-full bg-amber/25 blur-xl" />
           <span
-            key={pill}
             className={cn(
-              "animate-tab-stretch surface-slider glow-slider block size-full rounded-full bg-slider transition-transform duration-(--dur-quick)",
-              dragging && "scale-x-105 scale-y-110",
+              "absolute -top-7 left-1/2 -translate-x-1/2 transition-transform duration-(--dur-quick)",
+              dragging && "-translate-y-1.5 scale-110",
             )}
-          />
+          >
+            <HandiSticker key={pill} pose={dragging ? "excited" : "happy"} sizes="64px" preload className="animate-pop-in size-[3.75rem]" />
+          </span>
         </span>
 
         {TABS.map(({ href, label, Icon }, i) => {
@@ -179,16 +187,12 @@ export function TabBar() {
               aria-current={isActive ? "page" : undefined}
               onClick={(event) => onLinkClick(event, isActive)}
               className={cn(
-                "pressable relative z-10 flex h-12 items-center justify-center gap-1.5 rounded-full text-sm font-semibold outline-none transition-colors duration-(--dur-base) focus-visible:ring-3 focus-visible:ring-ring/80",
-                isLit ? "text-slider-foreground" : "text-muted-foreground hover:text-foreground",
+                "pressable relative z-10 flex h-14 flex-col items-center justify-end gap-0.5 rounded-2xl pb-1 text-xs font-semibold outline-none transition-colors duration-(--dur-base) focus-visible:ring-3 focus-visible:ring-ring/80",
+                isLit ? "font-bold text-primary" : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <Icon
-                key={isLit ? "on" : "off"}
-                className={cn("size-5 shrink-0", isLit && "animate-tab-pop")}
-                strokeWidth={isLit ? 2.5 : 2}
-                aria-hidden="true"
-              />
+              {/* Handi covers the lit tab's icon, so it steps aside. */}
+              <Icon className={cn("size-5 shrink-0", isLit && "invisible")} strokeWidth={2} aria-hidden="true" />
               {label}
             </Link>
           );
