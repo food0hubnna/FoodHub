@@ -74,7 +74,7 @@ export function YourUsualChip({ usual }: { usual: UsualCart }) {
           <AlertDialogHeader>
             <AlertDialogTitle className="text-lg font-bold">Replace your cart?</AlertDialogTitle>
             <AlertDialogDescription>
-              Your cart already has items in it. Refilling your usual from {usual.restaurantName}{" "}
+              The bag already has items in it. Refilling your usual from {usual.restaurantName}{" "}
               will replace what&apos;s there now.
             </AlertDialogDescription>
           </AlertDialogHeader>

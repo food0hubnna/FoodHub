@@ -69,7 +69,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     new Set(input.lines.map((l) => `${l.dishId}:${[...(l.addonIds ?? [])].sort().join(",")}`)).size !==
       input.lines.length
   ) {
-    return { ok: false, error: "Something's off with your cart — give it a quick look and try again." };
+    return { ok: false, error: "Something's off with your bag — give it a quick look and try again." };
   }
 
   const offer = input.offer ?? null;
@@ -127,14 +127,14 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     const names = removedDishIds.length === 1 ? "An item" : `${removedDishIds.length} items`;
     return {
       ok: false,
-      error: `${names} in your cart just sold out and ${removedDishIds.length === 1 ? "was" : "were"} removed. Please check your cart.`,
+      error: `${names} in your bag just sold out and ${removedDishIds.length === 1 ? "was" : "were"} removed. Please check your cart.`,
       removedDishIds,
     };
   }
   if (updatedPrices.length > 0) {
     return {
       ok: false,
-      error: "Heads up — some prices just changed. Your cart's updated, take a peek at the new total.",
+      error: "Heads up — some prices just changed. Your bag's updated, take a peek at the new total.",
       updatedPrices,
     };
   }
@@ -186,22 +186,22 @@ const PLACE_ORDER_ERRORS: Record<string, string> = {
   not_authenticated: "Looks like you got signed out — sign in again to place your order.",
   profile_missing: "Looks like you got signed out — sign in again to place your order.",
   banned: "Ordering's blocked for this phone number. If that doesn't sound right, please reach out to support.",
-  ordering_paused: "Ordering's closed right now — check back in a bit. Your cart is saved.",
+  ordering_paused: "Ordering's closed right now — check back in a bit. Your bag is saved.",
   // The developer kill switch / maintenance (/dev, public.site_status).
-  site_offline: "FoodHub is down for maintenance right now — try again in a bit. Your cart is saved.",
-  ordering_closed: "Ordering's closed right now — check back in a bit. Your cart is saved.",
+  site_offline: "FoodHub is down for maintenance right now — try again in a bit. Your bag is saved.",
+  ordering_closed: "Ordering's closed right now — check back in a bit. Your bag is saved.",
   invalid_contact_phone: "Enter a valid 10-digit mobile number.",
   notes_too_long: `That note's a bit long — keep it under ${MAX_NOTES} characters.`,
   restaurant_closed: "This restaurant isn't taking orders right now.",
-  empty_cart: "Your cart's empty — go pick something tasty.",
-  invalid_items: "Something's off with your cart — give it a quick look and try again.",
-  dish_unavailable: "Something in your cart just sold out — hop back to the menu to swap it out.",
+  empty_cart: "Your bag's empty — go pick something tasty.",
+  invalid_items: "Something's off with your bag — give it a quick look and try again.",
+  dish_unavailable: "Something in your bag just sold out — hop back to the menu to swap it out.",
   // Rate limits (20260922000000_place_order_rate_limit.sql): 5 a minute, 8 unfinished.
-  order_rate_limited: "That's a lot of orders in a minute — wait a moment and try again. Your cart is saved.",
+  order_rate_limited: "That's a lot of orders in a minute — wait a moment and try again. Your bag is saved.",
   addon_unavailable: "An extra you picked isn't available any more — remove that item and add it again.",
   too_many_open_orders: "You already have 8 orders on the way — once one is delivered you can order again.",
   // Discount offers (20261015030000_discount_offers.sql).
   offer_unavailable: "That offer just ended, so it's been removed. Check the new total and place your order again.",
   offer_wrong_restaurant: "That offer isn't for this restaurant, so it's been removed. Check the total and place your order again.",
-  offer_not_eligible: "Your cart doesn't qualify for that many free biryanis. Every 3 full biryanis get 1 single free.",
+  offer_not_eligible: "Your bag doesn't qualify for that many free biryanis. Every 3 full biryanis get 1 single free.",
 };

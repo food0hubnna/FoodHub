@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ViewTransition } from "react";
-import { ArrowLeft, MapPin } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { BlurImage } from "@/components/blur-image";
+import { HangingSign } from "@/components/handi/hanging-sign";
 import { MenuProgress } from "@/components/menu/menu-progress";
 import { MenuView } from "@/components/menu/menu-view";
 import { getRestaurantCoverPhoto } from "@/lib/data/dish-photos";
@@ -89,51 +90,30 @@ export default async function RestaurantPage({ params, searchParams }: PageProps
     </span>
   );
 
-  // Same anatomy as Home's restaurant card: the photo is just a photo (no
-  // black scrim, no name printed over it) and the page itself rises over
-  // its bottom edge as a rounded sheet carrying the name, the facts as chips
-  // (cuisines, free delivery to Main Gate) and the lit "tried N of M" bar.
+  // The kitchen's window from Home, bigger: the photo in the arch, the name on
+  // its hanging sign, the facts under it and Handi walking the "tried N of M" bar.
   return (
-    <main className="mx-auto w-full max-w-md">
+    <main className="relative mx-auto w-full max-w-md px-6 pt-4">
       <ViewTransition {...NAV_TRANSITION}>
         <ViewTransition {...REVEAL_ENTER}>
-          <div className={cn("relative aspect-[16/10] bg-stripes", !active && "grayscale")}>
-            {cover && (
-              <BlurImage
-                src={cover}
-                alt=""
-                sizes="(min-width: 448px) 448px, 100vw"
-                className="object-cover"
-              />
-            )}
-            <Link
-              href="/"
-              aria-label="Back to restaurants"
-              transitionTypes={["nav-back"]}
-              className="absolute top-4 left-4 flex size-11 items-center justify-center rounded-full bg-card/90 shadow-card backdrop-blur-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/80"
-            >
-              <ArrowLeft className="size-5" />
-            </Link>
-            <div className="absolute top-5 right-4">{statusBadge}</div>
-          </div>
-
-          <div className="relative -mt-7 rounded-t-[1.75rem] bg-background px-6 shadow-[0_-12px_30px_-18px_var(--glow-hero)]">
-            <header className="pt-6 pb-3">
-              <h1 className="font-heading text-headline font-bold">{restaurant.name}</h1>
-              {restaurant.description && (
-                <p className="mt-1 text-muted-foreground">{restaurant.description}</p>
+          <section className="arch-card glow-hero relative border bg-card p-2">
+            <div className={cn("arch relative h-64 overflow-hidden bg-stripes ring-2 ring-amber/60", !active && "grayscale")}>
+              {cover && (
+                <BlurImage
+                  src={cover}
+                  alt=""
+                  sizes="(min-width: 448px) 400px, 90vw"
+                  className="object-cover"
+                />
               )}
-              <ul className="mt-3 flex flex-wrap items-center gap-1.5 text-xs font-semibold">
-                {restaurant.cuisine_tags.map((tag) => (
-                  <li key={tag} className="rounded-full bg-brand-soft px-2.5 py-1 text-brand-soft-foreground">
-                    {tag}
-                  </li>
-                ))}
-                <li className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1">
-                  <MapPin className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
-                  Free to Main Gate
-                </li>
-              </ul>
+              <div className="absolute top-3 left-1/2 -translate-x-1/2">{statusBadge}</div>
+            </div>
+            <HangingSign as="h1">{restaurant.name}</HangingSign>
+            <div className="px-3 pt-2 pb-3 text-center">
+              {restaurant.description && <p className="text-sm text-muted-foreground">{restaurant.description}</p>}
+              <p className="mt-1 text-xs font-semibold text-brand-soft-foreground">
+                {[...restaurant.cuisine_tags, "Free to Main Gate"].join(" · ")}
+              </p>
               <MenuProgress restaurantName={restaurant.name} tried={dishesTried} total={totalDishes} />
               {!active && (
                 <p className="mt-4 rounded-2xl bg-secondary px-4 py-3 text-sm">
@@ -146,8 +126,19 @@ export default async function RestaurantPage({ params, searchParams }: PageProps
                   <strong className="font-semibold">{ordering.headline}.</strong> {ordering.detail}
                 </p>
               )}
-            </header>
+            </div>
+          </section>
+          {/* In the arch's free corner, clear of the curve. */}
+          <Link
+            href="/"
+            aria-label="Back to kitchens"
+            transitionTypes={["nav-back"]}
+            className="absolute top-3 left-4 z-20 flex size-11 items-center justify-center rounded-full border bg-card shadow-card outline-none focus-visible:ring-3 focus-visible:ring-ring/80"
+          >
+            <ArrowLeft className="size-5" />
+          </Link>
 
+          <div className="mt-3">
             <MenuView
               restaurant={restaurant}
               sections={sections}

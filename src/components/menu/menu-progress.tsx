@@ -1,10 +1,10 @@
 import type { CSSProperties } from "react";
+import { HandiSticker } from "@/components/handi/handi-says";
 
 /**
- * "You've tried N of M here" on the menu page, with a thin bar in the
- * palette's brand gradient (--brand-1 → -3) that fills in from empty the first time it
- * paints (`progress-fill`, instant under reduced motion) and a note of how
- * many are left.
+ * "You've tried N of M here" on the menu page: a gold bar with Handi walking
+ * along it, filling in from empty the first time it paints (`progress-fill`,
+ * instant under reduced motion), and a note of how many are left.
  */
 export function MenuProgress({
   restaurantName,
@@ -20,24 +20,31 @@ export function MenuProgress({
   const left = Math.max(0, total - tried);
 
   return (
-    <div className="mt-4">
+    <div className="mt-3 text-left">
       <p className="flex items-baseline justify-between gap-3 text-sm text-muted-foreground">
         <span>
           You&apos;ve tried <span className="font-semibold text-foreground">{tried}</span> of {total} here
         </span>
         <span className="shrink-0 text-xs">{left === 0 ? "Tried it all" : `${left} to go`}</span>
       </p>
-      <div
-        role="progressbar"
-        aria-valuenow={tried}
-        aria-valuemin={0}
-        aria-valuemax={total}
-        aria-label={`Dishes tried at ${restaurantName}`}
-        className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-secondary"
-      >
+      <div className="relative mt-5" style={{ "--fill": `${pct}%` } as CSSProperties}>
         <div
-          className="progress-fill h-full w-(--fill) rounded-full bg-[linear-gradient(90deg,var(--brand-1),var(--brand-2),var(--brand-3))] shadow-[0_0_10px_var(--glow-amber)]"
-          style={{ "--fill": `${pct}%` } as CSSProperties}
+          role="progressbar"
+          aria-valuenow={tried}
+          aria-valuemin={0}
+          aria-valuemax={total}
+          aria-label={`Dishes tried at ${restaurantName}`}
+          className="h-2 w-full overflow-hidden rounded-full bg-secondary"
+        >
+          <div
+            className="progress-fill h-full w-(--fill) rounded-full bg-[linear-gradient(90deg,var(--brand-2),var(--brand-3))]"
+            style={{ "--fill": `${pct}%` } as CSSProperties}
+          />
+        </div>
+        <HandiSticker
+          pose="side"
+          sizes="28px"
+          className="absolute! bottom-0 left-[clamp(0px,calc(var(--fill)-0.875rem),calc(100%-1.75rem))] size-7"
         />
       </div>
     </div>

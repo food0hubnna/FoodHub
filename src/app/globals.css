@@ -408,6 +408,13 @@
 @utility arch-card {
   border-radius: 50% 50% 1.7rem 1.7rem / 7.5rem 7.5rem 1.7rem 1.7rem;
 }
+/* The same arch at dish-card size. */
+@utility arch-sm {
+  border-radius: 50% 50% 0.9rem 0.9rem / 3.5rem 3.5rem 0.9rem 0.9rem;
+}
+@utility arch-card-sm {
+  border-radius: 50% 50% 1.25rem 1.25rem / 4rem 4rem 1.25rem 1.25rem;
+}
 /* A bill with a scalloped foot. Masked, so any shadow goes on a parent. */
 @utility receipt {
   --scallop: 1rem;
@@ -452,6 +459,9 @@
    stays as the flat fallback. */
 @utility surface-hero {
   background-image: var(--hero-surface);
+}
+.name-letter {
+  display: inline-block;
 }
 .script-name {
   font-weight: 400;
@@ -716,6 +726,53 @@
       opacity: 0;
       transform: translateY(6px);
     }
+  }
+  /* The tab bar: its swell squashes and settles like liquid as it lands, and
+     Handi hops across to it, then breathes while it waits. */
+  .animate-swell-land {
+    animation: swell-land 560ms var(--ease-out-expo) both;
+    transform-origin: 50% 100%;
+  }
+  .animate-handi-hop {
+    animation: handi-hop 560ms var(--ease-out-expo) both;
+    transform-origin: 50% 100%;
+  }
+  .animate-handi-idle {
+    animation: handi-idle 3.4s ease-in-out infinite;
+    transform-origin: 50% 100%;
+  }
+  @keyframes swell-land {
+    0% { transform: scale(1.5, 0.45); }
+    45% { transform: scale(0.9, 1.18); }
+    72% { transform: scale(1.05, 0.95); }
+    100% { transform: none; }
+  }
+  @keyframes handi-hop {
+    0% { transform: translateY(4px) scale(1.1, 0.86); }
+    38% { transform: translateY(-20px) rotate(-5deg) scale(0.95, 1.07); }
+    70% { transform: translateY(0) scale(1.08, 0.92); }
+    86% { transform: translateY(-3px) scale(0.99, 1.01); }
+    100% { transform: none; }
+  }
+  @keyframes handi-idle {
+    0%, 100% { transform: none; }
+    50% { transform: scale(1.025, 0.975); }
+  }
+  /* Home's greeting: the name's letters rise in, then hop in a wave now and then. */
+  .name-letter {
+    animation:
+      name-rise 620ms var(--ease-spring) calc(var(--i) * 55ms + 200ms) both,
+      name-hop 7s ease-in-out calc(var(--i) * 70ms + 3s) infinite;
+  }
+  html:is([data-splash="play"], [data-splash="run"]) .name-letter {
+    animation-play-state: paused;
+  }
+  @keyframes name-rise {
+    from { opacity: 0; transform: translateY(0.5em) scale(0.8); }
+  }
+  @keyframes name-hop {
+    0%, 8%, 100% { transform: none; filter: none; }
+    4% { transform: translateY(-0.22em); filter: brightness(1.3); }
   }
   .motif-steam {
     animation: motif-steam 3.2s ease-in-out infinite;

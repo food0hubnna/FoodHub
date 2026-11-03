@@ -1,17 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { ArrowRight } from "lucide-react";
-import { cartTotals, useCart, lineKey } from "@/lib/cart/store";
-import { getDishPhoto, isUploadedPhoto } from "@/lib/data/dish-photos";
+import { HandiSticker } from "@/components/handi/handi-says";
+import { cartTotals, useCart } from "@/lib/cart/store";
 import { formatRupees } from "@/lib/format";
+import { bagLine } from "@/lib/handi/lines";
 import { cn } from "@/lib/utils";
 import type { OffersState } from "@/lib/offers";
 import { CartSheet } from "./cart-sheet";
 
 /**
- * Floating "N items · ₹X · View cart" bar plus the cart sheet it opens.
+ * Floating bar with Handi on it, a line about what's in the bag, the total and
+ * "View bag", plus the sheet it opens. Handi hops whenever something's added.
  * Hidden while the cart is empty (the sheet stays open if you empty it).
  */
 export function CartBar({
@@ -54,43 +55,24 @@ export function CartBar({
               hasTabBar ? "bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))+6rem)] pb-0" : "bottom-0 pb-[max(1rem,env(safe-area-inset-bottom))]",
             )}
           >
-            <div className="surface-hero glow-hero flex items-center gap-3 rounded-full bg-hero p-2 pl-3 text-hero-foreground">
-              {/* The actual food in the cart, not just a count: up to two
-                  dish photos overlapping, falling back to the dish's initial.
-                  Dropped below 360px so the total never gets squeezed. */}
-              <div className="flex shrink-0 -space-x-3 max-[359px]:hidden" aria-hidden="true">
-                {cart.lines.slice(0, 2).map((line) => {
-                  const photo = cart.restaurantName ? getDishPhoto(cart.restaurantName, line.name) : undefined;
-                  return (
-                    <span
-                      key={lineKey(line)}
-                      className="animate-pop-in relative flex size-11 items-center justify-center overflow-hidden rounded-full bg-hero-foreground/15 font-heading text-lg font-bold ring-2 ring-hero"
-                    >
-                      {photo ? (
-                        <Image src={photo} alt="" fill sizes="44px" unoptimized={isUploadedPhoto(photo)} className="object-cover" />
-                      ) : (
-                        line.name.trim().charAt(0)
-                      )}
-                    </span>
-                  );
-                })}
-              </div>
+            <div className="surface-hero glow-hero relative flex items-center gap-2 rounded-[1.5rem] bg-hero p-2 pl-[4.25rem] text-hero-foreground">
+              <span key={totals.items} aria-hidden="true" className="animate-handi-hop absolute bottom-1 left-1">
+                <HandiSticker pose="excited" sizes="64px" className="size-16 drop-shadow-[0_3px_5px_rgb(0_0_0/0.35)]" />
+              </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm opacity-75">
-                  <span key={totals.items} className="animate-bounce-count inline-block">
-                    {totals.items}
-                  </span>{" "}
-                  {totals.items === 1 ? "item" : "items"}
-                  {cartIsElsewhere && ` · ${cart.restaurantName}`}
+                <p className="truncate text-xs text-hero-foreground/85">
+                  {cartIsElsewhere ? `${totals.items} from ${cart.restaurantName}` : bagLine(totals.items)}
                 </p>
-                <p className="font-heading text-2xl font-bold">{formatRupees(totals.amount)}</p>
+                <p key={totals.amount} className="animate-bounce-count font-heading text-2xl leading-tight font-bold">
+                  {formatRupees(totals.amount)}
+                </p>
               </div>
               <button
                 type="button"
                 onClick={() => setOpen(true)}
-                className="surface-primary glow-amber flex h-14 shrink-0 items-center gap-2 rounded-full bg-primary px-5 text-lg font-bold text-primary-foreground outline-none hover:brightness-110 focus-visible:ring-3 focus-visible:ring-hero-foreground/80"
+                className="surface-primary glow-amber flex h-13 shrink-0 items-center gap-1.5 rounded-[1.1rem] bg-primary px-4 text-base font-bold text-primary-foreground outline-none hover:brightness-110 focus-visible:ring-3 focus-visible:ring-hero-foreground/80"
               >
-                View cart <ArrowRight className="size-5" />
+                View bag <ArrowRight className="size-5" />
               </button>
             </div>
           </div>

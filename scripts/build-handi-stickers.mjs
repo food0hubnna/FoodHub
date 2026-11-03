@@ -23,6 +23,8 @@ const CELL_W = 512;
 const CELL_H = 512;
 /** How far from the background colour still counts as background. */
 const TOLERANCE = 30;
+/** Below this row of a cell only the feet and their shadow are left. */
+const GROUND_Y = 462;
 
 await mkdir("public/handi", { recursive: true });
 
@@ -58,7 +60,9 @@ for (const [name, col, row] of POSES) {
       rgba[o] = data[i];
       rgba[o + 1] = data[i + 1];
       rgba[o + 2] = data[i + 2];
-      rgba[o + 3] = isBg[y * w + x] ? 0 : Math.min(255, Math.round((far(i) / 70) * 255));
+      // Under the feet: drop the painted ground shadow, which reads as a pale plate on dark surfaces.
+      const groundShadow = y > GROUND_Y && far(i) < 110;
+      rgba[o + 3] = isBg[y * w + x] || groundShadow ? 0 : Math.min(255, Math.round((far(i) / 70) * 255));
     }
   }
   // Inside the body the colour is far from cream, so this only softens the edge.
