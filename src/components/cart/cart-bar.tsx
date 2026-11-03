@@ -51,7 +51,7 @@ export function CartBar({
           <div
             className={cn(
               "animate-slide-up-in fixed inset-x-0 z-20 mx-auto w-full max-w-md px-4",
-              hasTabBar ? "bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))+4.5rem)] pb-0" : "bottom-0 pb-[max(1rem,env(safe-area-inset-bottom))]",
+              hasTabBar ? "bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))+6rem)] pb-0" : "bottom-0 pb-[max(1rem,env(safe-area-inset-bottom))]",
             )}
           >
             <div className="surface-hero glow-hero flex items-center gap-3 rounded-full bg-hero p-2 pl-3 text-hero-foreground">

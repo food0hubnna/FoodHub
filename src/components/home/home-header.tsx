@@ -1,30 +1,18 @@
-import { Moon, Sun, Sunrise, Sunset, type LucideIcon } from "lucide-react";
 import { AboutFoodHubDialog } from "@/components/home/about-foodhub-dialog";
-import { ScriptName } from "@/components/theme/script-name";
 import { BrandLogo } from "@/components/brand-logo";
 import { ChannelPopover } from "@/components/channel/channel-popover";
+import { HandiSays } from "@/components/handi/handi-says";
+import { ScriptName } from "@/components/theme/script-name";
 import { Avatar, initialsOf } from "@/components/taste/avatar";
 import { OpenTasteSheetButton } from "@/components/taste/taste-sheet";
 import type { TimeOfDay } from "@/lib/date";
-
-// Each time of day gets its own ambient field (.mood-field.mood-<time> in
-// globals.css) — sunrise amber, bright afternoon, rose dusk, pine night —
-// plus a small time-of-day line and a question to match.
-const MOOD: Record<TimeOfDay, { greeting: string; Icon: LucideIcon; question: string }> = {
-  morning: { greeting: "Good morning", Icon: Sunrise, question: "Fuel up for the day?" },
-  afternoon: { greeting: "Good afternoon", Icon: Sun, question: "What are we craving now?" },
-  evening: { greeting: "Good evening", Icon: Sunset, question: "Dinner o'clock?" },
-  night: { greeting: "Still up", Icon: Moon, question: "Late night craving?" },
-};
+import { greeting } from "@/lib/handi/lines";
+import { cn } from "@/lib/utils";
 
 /**
- * Home's header, over the time-of-day mood field: the logo (opens About)
- * and the student's avatar — their food icon, or their initials in a lit
- * pine circle until they pick one — which opens the "Your taste" sheet,
- * with the WhatsApp group button (ChannelPopover) beside it;
- * then a small time-of-day line, "Hey, <first name>" as the headline and
- * the question of the hour under it. Trending moved out of
- * here into the "Campus favourites" row (popular-rail.tsx).
+ * Home's header: the logo (opens About), the WhatsApp group button
+ * (ChannelPopover) and the student's avatar (opens "Your taste"), then Handi
+ * greeting them by name in a speech bubble, with a line for the time of day.
  */
 export function HomeHeader({
   fullName,
@@ -36,18 +24,11 @@ export function HomeHeader({
   /** The taste profile's avatar id, or null for the student's initials. */
   avatar: string | null;
 }) {
-  const { greeting, Icon, question } = MOOD[timeOfDay];
+  const { hello, name, line, pose } = greeting(fullName, timeOfDay);
 
   return (
-    // Bleeds out of main's px-6/pt-6 so the field reaches the screen edges
-    // and the very top; the field itself runs past the header's bottom and
-    // fades out behind whatever comes next.
-    <header className="relative -mx-6 -mt-6 px-6 pt-6">
-      <div
-        aria-hidden="true"
-        className={`mood-field mood-${timeOfDay} pointer-events-none absolute inset-x-0 top-0 h-[calc(100%+6rem)]`}
-      />
-      <div className="relative flex items-center justify-between">
+    <header>
+      <div className="flex items-center justify-between">
         <AboutFoodHubDialog>
           <BrandLogo splashTarget className="size-12" />
         </AboutFoodHubDialog>
@@ -61,14 +42,19 @@ export function HomeHeader({
           </OpenTasteSheetButton>
         </div>
       </div>
-      <p className="relative mt-8 flex items-center gap-1.5 text-sm font-semibold">
-        <Icon className="size-4 shrink-0" aria-hidden="true" />
-        {greeting}
-      </p>
-      <h1 className="text-heading relative mt-1 font-heading text-display font-bold break-words">
-        Hey, <ScriptName text={fullName} />
-      </h1>
-      <p className="relative mt-1.5 text-lg leading-snug">{question}</p>
+      <HandiSays pose={pose} preload className="mt-5">
+        <h1 className="font-heading text-base leading-tight font-bold">
+          {hello}
+          {name ? "," : ""}
+          {name && (
+            <ScriptName
+              text={name}
+              className={cn("mt-0.5 block leading-[1.1]", name.length > 9 ? "text-[1.9rem]" : "text-[2.5rem]")}
+            />
+          )}
+        </h1>
+        <p className="mt-0.5 text-sm text-muted-foreground">{line}</p>
+      </HandiSays>
     </header>
   );
 }

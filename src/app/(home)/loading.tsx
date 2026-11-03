@@ -2,56 +2,46 @@ import { ViewTransition } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { REVEAL_EXIT } from "@/lib/nav-transition";
 
-// Mirrors page.tsx's layout (header with the logo and initials circle,
-// pill search, "What's on your mind?" tiles, filter chips, restaurant
-// cards) so nothing jumps once the real data replaces it.
+// Mirrors page.tsx's layout (logo and avatar, Handi's greeting, search, the
+// scene, "Hungry for?" plates, kitchen cards) so nothing jumps once the real
+// data replaces it.
 export default function Loading() {
   return (
     <main className="mx-auto w-full max-w-md px-6 pt-6 pb-28" aria-busy="true">
-      <span className="sr-only">Loading restaurants…</span>
+      <span className="sr-only">Loading kitchens…</span>
 
       <ViewTransition {...REVEAL_EXIT}>
         <div className="flex items-center justify-between">
-          <Skeleton className="size-12 rounded-2xl" />
+          <Skeleton className="size-12 rounded-full" />
           <Skeleton className="size-11 shrink-0 rounded-full" />
         </div>
-        <Skeleton className="mt-8 h-5 w-32" />
-        <Skeleton className="mt-2 h-9 w-4/5" />
-        <Skeleton className="mt-2 h-9 w-1/2" />
+        <div className="mt-5 flex items-center gap-1">
+          <Skeleton className="size-24 shrink-0 rounded-full" />
+          <Skeleton className="paper h-20 min-w-0 flex-1" />
+        </div>
 
         <Skeleton className="mt-6 h-14 w-full rounded-full" />
+        <Skeleton className="paper mt-6 h-50 w-full" />
 
-        <Skeleton className="mt-7 h-7 w-56" />
-        <div className="-mx-6 mt-3 flex gap-3.5 overflow-hidden px-6 pt-1 pb-2">
+        <Skeleton className="mt-7 h-7 w-40" />
+        <div className="-mx-6 mt-2 flex gap-3 overflow-hidden px-6 pt-3 pb-2">
           {[0, 1, 2, 3, 4].map((i) => (
-            <div key={i} className="flex w-[4.75rem] shrink-0 flex-col items-center gap-1.5">
-              <Skeleton className="size-[4.5rem] rounded-full" />
+            <div key={i} className="flex w-20 shrink-0 flex-col items-center gap-1.5">
+              <Skeleton className="size-20 rounded-full" />
               <Skeleton className="h-3 w-12" />
             </div>
           ))}
         </div>
-        <div className="mt-3 flex gap-2 overflow-hidden py-2.5">
-          {[20, 16, 16, 24].map((w, i) => (
-            <Skeleton key={i} className="h-9 shrink-0 rounded-full" style={{ width: `${w * 0.25}rem` }} />
-          ))}
-        </div>
 
-        <div className="mt-8 flex items-end justify-between">
-          <Skeleton className="h-7 w-52" />
-          <Skeleton className="h-4 w-16" />
-        </div>
-
+        <Skeleton className="mt-8 h-7 w-52" />
         <div className="mt-4 flex flex-col gap-5">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="rounded-[1.75rem] border bg-card p-2 shadow-card">
-              <Skeleton className="h-44 rounded-[1.25rem]" />
-              <div className="px-3 pt-3.5 pb-2.5">
-                <div className="flex items-start justify-between gap-3">
-                  <Skeleton className="h-7 w-2/3" />
-                  <Skeleton className="size-10 shrink-0 rounded-full" />
-                </div>
+            <div key={i} className="arch-card border bg-card p-2 shadow-card">
+              <Skeleton className="arch h-56" />
+              <div className="flex flex-col items-center px-3 pt-3 pb-2.5">
+                <Skeleton className="h-8 w-1/2 rounded-xl" />
                 <Skeleton className="mt-2 h-4 w-3/4" />
-                <Skeleton className="mt-3 h-4 w-1/2" />
+                <Skeleton className="mt-4 h-8 w-full rounded-full" />
               </div>
             </div>
           ))}

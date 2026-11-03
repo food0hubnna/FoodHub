@@ -9,6 +9,7 @@ import {
   UtensilsCrossed,
   type LucideIcon,
 } from "lucide-react";
+import { SectionTitle } from "@/components/handi/section-title";
 import { cn } from "@/lib/utils";
 
 export type MilestoneKey =
@@ -114,24 +115,19 @@ export function MilestoneBadges(stats: MilestoneStats) {
 
   return (
     <section className="mt-7" aria-labelledby="milestones">
-      <div className="flex items-baseline justify-between">
-        <h2 id="milestones" className="font-heading text-title font-bold">
-          Milestones
-        </h2>
-        <span className="text-sm font-semibold text-muted-foreground tabular-nums">
-          {unlockedCount} of {tiles.length}
-        </span>
-      </div>
+      <SectionTitle id="milestones" aside={`${unlockedCount} of ${tiles.length}`}>
+        Sticker book
+      </SectionTitle>
       {next && (
         <p className="mt-0.5 text-sm text-muted-foreground">
           Next up: <span className="font-semibold text-foreground">{next.label}</span> —{" "}
           {next.remaining(Math.max(0, next.target - next.current)).toLowerCase()}
         </p>
       )}
-      <ul className="mt-3 grid grid-cols-3 gap-2.5">
+      <ul className="paper mt-3 grid grid-cols-3 gap-x-1 gap-y-3 border bg-card p-3 shadow-card">
         {/* The tiles rise in one after another. */}
         {tiles.map((t, i) => (
-          <li key={t.key} className="animate-slide-up-in" style={{ animationDelay: `${i * 50}ms` }}>
+          <li key={t.key} className={cn("animate-slide-up-in", t.unlocked && (i % 2 === 0 ? "-rotate-2" : "rotate-2"))} style={{ animationDelay: `${i * 50}ms` }}>
             <BadgeTile
               Icon={t.Icon}
               label={t.label}
@@ -175,8 +171,7 @@ function BadgeTile({
   return (
     <div
       className={cn(
-        "flex h-full flex-col items-center rounded-2xl px-1.5 pt-3.5 pb-3 text-center",
-        unlocked ? "rim-light border bg-card shadow-card" : "border border-dashed bg-transparent",
+        "flex h-full flex-col items-center px-1 py-1 text-center",
       )}
     >
       <span className="relative flex size-12 shrink-0 items-center justify-center">

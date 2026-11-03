@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ViewTransition } from "react";
 import { ArrowLeft, MapPin, Share2 } from "lucide-react";
+import { HandiSticker } from "@/components/handi/handi-says";
+import { HangingSign } from "@/components/handi/hanging-sign";
+import { SectionTitle } from "@/components/handi/section-title";
 import { BlurImage } from "@/components/blur-image";
-import { BrandLogo } from "@/components/brand-logo";
 import { CelebrationOverlay } from "@/components/celebration-overlay";
 import { NotifyMeCard } from "@/components/notifications/notify-me-card";
 import { RandomAnimation } from "@/components/random-animation";
@@ -22,6 +24,7 @@ import { formatOrderNumber } from "@/lib/orders/status";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "@/lib/toast/store";
 import { cn } from "@/lib/utils";
+import { orderLine } from "@/lib/handi/lines";
 import { OFFERS } from "@/lib/offers";
 
 /** Native share sheet when available (mostly mobile); clipboard copy otherwise. */
@@ -108,18 +111,11 @@ export function OrderTracking({
   const cancelled = status === "cancelled";
   const delivered = status === "delivered";
   const eta = deliveryWindow(initialOrder.createdAt);
-  // Up to three distinct photos of what was ordered, for the ticket's header.
-  const photos = initialOrder.items
-    .map((item) => ({ dishName: item.dishName, src: getDishPhoto(initialOrder.restaurantName, item.dishName) }))
-    .filter((p): p is { dishName: string; src: string } => !!p.src)
-    .filter((p, i, all) => all.findIndex((q) => q.src === p.src) === i)
-    .slice(0, 3);
-
   return (
     <>
       {showSuccess && (
         <CelebrationOverlay confettiOnceKey={CONFETTI_SHOWN_KEY}>
-          <BrandLogo className="animate-pop-in size-20" />
+          <HandiSticker pose="excited" sizes="176px" preload className="animate-pop-in size-44" />
           <p className="animate-pop-in mt-5 font-heading text-2xl font-bold">Order placed!</p>
           <p className="mt-1 text-hero-foreground/85">Show this token at the gate</p>
           <p className="animate-pop-in mt-4 font-heading text-7xl font-bold tracking-tight text-hero-accent">
@@ -140,108 +136,70 @@ export function OrderTracking({
             </Link>
           </div>
 
-          <h1 className="sr-only">
-            Order {formatOrderNumber(initialOrder.dailyNumber)} from {initialOrder.restaurantName}
-          </h1>
-          {/* The token as a lit pine ticket stub: what you ordered (photos)
-              above the tear line, what you show at the gate below it, and the
-              promised delivery time at its foot. */}
-          <div className="surface-hero glow-hero relative overflow-hidden rounded-[1.75rem] bg-hero text-hero-foreground">
-            {photos.length > 0 && (
-              <div
-                className={cn("grid h-36 gap-1 p-2 pb-0", cancelled && "opacity-60 grayscale")}
-                style={{ gridTemplateColumns: `repeat(${photos.length}, minmax(0, 1fr))` }}
-              >
-                {photos.map(({ dishName, src }, i) => (
-                  <div
-                    key={src}
-                    className={cn(
-                      "relative overflow-hidden bg-hero-foreground/10",
-                      i === 0 && "rounded-tl-[1.25rem]",
-                      i === photos.length - 1 && "rounded-tr-[1.25rem]",
-                    )}
-                  >
-                    <BlurImage src={src} alt={dishName} sizes="(min-width: 448px) 400px, 90vw" className="object-cover" />
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="px-6 pt-4 pb-5">
-              <p className="truncate text-sm text-hero-foreground/85">
-                {initialOrder.restaurantName} · {formatTime(initialOrder.createdAt)}
-              </p>
-            </div>
-
-            {/* Tear line: dashed rule with a notch cut out of each edge. */}
-            <div className="relative h-0 border-t-2 border-dashed border-hero-foreground/20" aria-hidden="true">
-              <span className="absolute top-1/2 -left-3 size-6 -translate-y-1/2 rounded-full bg-background" />
-              <span className="absolute top-1/2 -right-3 size-6 -translate-y-1/2 rounded-full bg-background" />
-            </div>
-
-            <div className="px-6 pt-5 pb-6">
-              <div className="min-w-0">
-                <p className="text-label text-hero-accent">{cancelled ? "Order token" : "Show this token"}</p>
-                <div className="mt-1 flex items-center gap-2">
-                  <p className={cn("font-heading text-6xl leading-none font-bold tracking-tight", cancelled && "line-through opacity-60")}>
-                    {formatOrderNumber(initialOrder.dailyNumber)}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => shareOrderToken(formatOrderNumber(initialOrder.dailyNumber))}
-                    aria-label="Share order token"
-                    className="flex size-9 shrink-0 items-center justify-center rounded-full bg-hero-foreground/10 outline-none hover:bg-hero-foreground/20 focus-visible:ring-2 focus-visible:ring-hero-foreground"
-                  >
-                    <Share2 className="size-4" />
-                  </button>
-                </div>
-              </div>
-              <p className="mt-5 flex items-center gap-2 rounded-full bg-hero-foreground/10 px-4 py-2.5 text-sm">
-                <MapPin className="size-4 shrink-0 text-hero-accent" aria-hidden="true" />
-                <span>
-                  Collect at <strong className="font-semibold">VIT-AP Main Gate</strong> · pay on delivery
-                </span>
-              </p>
-            </div>
-
-            {/* The promise, nothing more: Handi beside the time, celebrating once delivered. */}
-            {!cancelled && (
-              <div
-                aria-live="polite"
-                className="flex items-center gap-4 border-t border-hero-foreground/15 bg-hero-foreground/5 px-6 py-4"
-              >
+          {/* Handi's promise: the same arched window as a kitchen on Home, with
+              Handi in it, the state of things on its sign and the promised
+              time under it. Nothing here moves with the order's progress. */}
+          <section aria-live="polite" className="arch-card glow-hero border bg-card p-2 text-center">
+            <div className={cn("arch surface-hero relative h-64 overflow-hidden bg-hero ring-2 ring-amber/60", cancelled && "grayscale")}>
+              {cancelled ? (
+                <HandiSticker pose="side" sizes="176px" className="absolute! inset-0 m-auto size-44" />
+              ) : (
                 <RandomAnimation
                   key={delivered ? "delivered" : "order"}
                   set={delivered ? "delivered" : "order"}
-                  sizes="112px"
-                  className="size-28 shrink-0 rounded-full [mask-image:radial-gradient(closest-side,#000_72%,transparent)]"
+                  sizes="(min-width: 448px) 400px, 90vw"
+                  className="size-full"
+                  mediaClassName={delivered ? "object-[50%_22%]" : "object-[50%_78%]"}
                 />
-                {delivered ? (
-                  <p className="font-heading text-xl font-bold">Delivered. Enjoy!</p>
-                ) : (
-                  <p className="min-w-0">
-                    <span className="block text-sm text-hero-foreground/85">
-                      {eta.lead === "Delivery by" ? "Your food will be delivered by" : eta.lead}
-                    </span>
-                    <span className="block font-heading text-xl font-bold">{eta.time}</span>
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+            <HangingSign>{cancelled ? "Order cancelled" : delivered ? "Delivered. Enjoy!" : "Handi's promise"}</HangingSign>
+            <div className="px-4 pt-3 pb-4">
+              {!cancelled && !delivered && (
+                <p>
+                  <span className="block text-sm text-muted-foreground">
+                    {eta.lead === "Delivery by" ? "Your food will be delivered by" : eta.lead}
+                  </span>
+                  <span className="block font-heading text-headline font-bold text-primary">{eta.time}</span>
+                </p>
+              )}
+              <p className={cn("text-sm text-muted-foreground", !cancelled && !delivered && "mt-1")}>{orderLine(status)}</p>
+            </div>
+          </section>
+
+          {/* The token, as a luggage tag tied to the order. */}
+          <section className="paper surface-hero glow-hero relative mt-5 -rotate-1 bg-hero p-5 pl-11 text-hero-foreground">
+            <span aria-hidden="true" className="absolute top-1/2 left-4 size-4 -translate-y-1/2 rounded-full bg-background ring-2 ring-hero-accent/70" />
+            <h1 className="sr-only">
+              Order {formatOrderNumber(initialOrder.dailyNumber)} from {initialOrder.restaurantName}
+            </h1>
+            <p className="text-label text-hero-accent">{cancelled || delivered ? "Order token" : "Show this at the gate"}</p>
+            <div className="mt-0.5 flex items-center gap-3">
+              <p className={cn("font-heading text-6xl leading-none font-bold", cancelled && "line-through opacity-60")}>
+                {formatOrderNumber(initialOrder.dailyNumber)}
+              </p>
+              <button
+                type="button"
+                onClick={() => shareOrderToken(formatOrderNumber(initialOrder.dailyNumber))}
+                aria-label="Share order token"
+                className="flex size-10 shrink-0 items-center justify-center rounded-full bg-hero-foreground/10 outline-none hover:bg-hero-foreground/20 focus-visible:ring-2 focus-visible:ring-hero-foreground"
+              >
+                <Share2 className="size-4" />
+              </button>
+            </div>
+            <p className="mt-2 truncate text-sm text-hero-foreground/85">
+              {initialOrder.restaurantName} · {formatTime(initialOrder.createdAt)}
+            </p>
+            <p className="mt-1 flex items-center gap-1.5 text-sm">
+              <MapPin className="size-4 shrink-0 text-hero-accent" aria-hidden="true" />
+              <span>
+                <strong className="font-semibold">VIT-AP Main Gate</strong> · pay on delivery
+              </span>
+            </p>
+          </section>
 
           {/* Still on its way: offer notifications instead of watching this page. */}
           {!cancelled && !delivered && <NotifyMeCard />}
-
-          {cancelled && (
-            <div className="mt-6 rounded-2xl border border-destructive/30 bg-destructive/5 px-5 py-4">
-              <p className="font-heading text-lg font-bold text-destructive">Order cancelled</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                This order won&apos;t be delivered. If you were charged or have questions, call
-                FoodHub.
-              </p>
-            </div>
-          )}
 
           {/* Appears live the moment admin marks it delivered (status comes
               from the Realtime subscription above). */}
@@ -256,14 +214,15 @@ export function OrderTracking({
             />
           )}
 
-          <div className="mt-4 rounded-[1.5rem] border bg-card p-5 shadow-card">
-            <p className="text-label text-muted-foreground">Your order</p>
-            <ul className="mt-2 divide-y">
+          <div className="mt-7 drop-shadow-sm">
+          <div className="receipt bg-card p-5">
+            <SectionTitle>What&apos;s in the bag</SectionTitle>
+            <ul className="mt-2 divide-y divide-dashed">
               {initialOrder.items.map((item) => {
                 const photo = getDishPhoto(initialOrder.restaurantName, item.dishName);
                 return (
                   <li key={item.id} className="flex items-center gap-3 py-2.5">
-                    <span className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-soft font-heading font-bold text-brand-soft-foreground/60">
+                    <span className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-soft font-heading font-bold text-brand-soft-foreground/60 ring-1 ring-amber/70">
                       {photo ? (
                         <BlurImage src={photo} alt="" sizes="44px" className="object-cover" />
                       ) : (
@@ -296,14 +255,16 @@ export function OrderTracking({
                 “{initialOrder.notes}”
               </p>
             )}
-            <div className="mt-3 flex items-center justify-between border-t pt-3">
+            <div className="mt-3 flex items-center justify-between border-t border-dashed pt-3">
               <p className="font-semibold">To pay at pickup</p>
               <p className="font-heading text-xl font-bold text-primary tabular-nums">{formatRupees(initialOrder.totalAmount)}</p>
             </div>
           </div>
+          </div>
 
-          <div className="mt-4 flex items-center justify-between rounded-[1.5rem] border bg-card px-5 py-4 shadow-card">
-            <div>
+          <div className="paper mt-4 flex items-center gap-2 border bg-card py-2 pr-4 pl-2 shadow-card">
+            <HandiSticker pose="side" sizes="56px" className="size-14" />
+            <div className="min-w-0 flex-1">
               <p className="text-sm text-muted-foreground">Something wrong?</p>
               <p className="font-semibold">Contact FoodHub</p>
             </div>

@@ -1,13 +1,13 @@
+import { Crown } from "lucide-react";
 import { BlurImage } from "@/components/blur-image";
+import { SectionTitle } from "@/components/handi/section-title";
 import type { FoodType } from "@/lib/home-filters";
 import { cn } from "@/lib/utils";
 
 /**
- * "What's on your mind?" — round photo tiles, one per food type, in a row
- * that bleeds to the screen edges. Tapping one filters Home to that type;
- * tapping it again clears it. The chosen tile wears a slowly turning
- * pine / rose / amber ring (still under reduced motion) and its label goes
- * amber.
+ * "Hungry for?" — a row of little plates, one per food type, that bleeds to
+ * the screen edges. Tapping one filters Home to that type; tapping it again
+ * clears it. The chosen plate wears Handi's crown.
  */
 export function FoodTypeRail({
   types,
@@ -23,10 +23,8 @@ export function FoodTypeRail({
 
   return (
     <section aria-labelledby="food-types-heading" className="mt-7">
-      <h2 id="food-types-heading" className="font-display text-title font-bold">
-        What&apos;s on your mind?
-      </h2>
-      <ul className="-mx-6 mt-3 flex snap-x scroll-px-6 gap-3.5 overflow-x-auto px-6 pt-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <SectionTitle id="food-types-heading">Hungry for?</SectionTitle>
+      <ul className="-mx-6 mt-2 flex snap-x scroll-px-6 gap-3 overflow-x-auto px-6 pt-3 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {types.map((type, i) => {
           const isSelected = type.key === selected;
           return (
@@ -35,28 +33,26 @@ export function FoodTypeRail({
                 type="button"
                 aria-pressed={isSelected}
                 onClick={() => onSelect(isSelected ? null : type.key)}
-                className="group flex w-[4.75rem] flex-col items-center gap-1.5 rounded-2xl outline-none"
+                className="group flex w-20 flex-col items-center gap-1.5 rounded-2xl outline-none"
               >
-                <span className="relative block size-[4.5rem] rounded-full p-[3px] group-focus-visible:ring-3 group-focus-visible:ring-ring/80">
-                  {isSelected && (
-                    <span aria-hidden="true" className="food-ring animate-ring-spin absolute inset-0 rounded-full" />
+                {/* A plate: cream rim, a thin gold line, the food in the middle. */}
+                <span
+                  className={cn(
+                    "relative block size-20 rounded-full border bg-card p-1.5 shadow-card transition-transform duration-(--dur-base) ease-spring group-hover:-rotate-3 group-focus-visible:ring-3 group-focus-visible:ring-ring/80",
+                    isSelected && "scale-105 border-amber",
                   )}
-                  <span
-                    className={cn(
-                      "relative block size-full overflow-hidden rounded-full bg-secondary shadow-card ring-2 ring-background",
-                      isSelected && "animate-pop-in",
-                    )}
-                  >
-                    <BlurImage
-                      src={type.photo}
-                      alt=""
-                      sizes="72px"
-                      loading={i < 5 ? "eager" : undefined}
-                      className="object-cover transition-transform duration-(--dur-slow) ease-out-expo group-hover:scale-110"
+                >
+                  {isSelected && (
+                    <Crown
+                      aria-hidden="true"
+                      className="animate-pop-in absolute -top-2.5 left-1/2 z-10 size-5 -translate-x-1/2 -rotate-6 fill-amber text-primary"
                     />
+                  )}
+                  <span className="relative block size-full overflow-hidden rounded-full ring-1 ring-amber/70">
+                    <BlurImage src={type.photo} alt="" sizes="72px" loading={i < 5 ? "eager" : undefined} className="object-cover" />
                   </span>
                 </span>
-                <span className={cn("text-xs font-semibold", isSelected ? "text-primary" : "text-foreground")}>
+                <span className={cn("text-center text-xs leading-tight font-semibold", isSelected ? "text-primary" : "text-foreground")}>
                   {type.label}
                 </span>
               </button>

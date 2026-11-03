@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { Flame } from "lucide-react";
 import { BlurImage } from "@/components/blur-image";
+import { SectionTitle } from "@/components/handi/section-title";
 import { VegMark } from "@/components/veg-mark";
 import { getDishPhoto, getSignatureDishes } from "@/lib/data/dish-photos";
 import type { SearchableDish } from "@/lib/data/restaurants";
 import type { TrendingDish } from "@/lib/data/trending";
 import type { Restaurant } from "@/lib/data/types";
 import { formatRupees } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 /** Most cards in the row. */
 const MAX = 8;
@@ -26,7 +27,7 @@ type RailDish = {
 export type Rail = { dishes: RailDish[] };
 
 /**
- * Home's one "Campus favourites" row: the week's real trending dishes
+ * Home's one "Handi's picks" row: the week's real trending dishes
  * first, ranked #1, #2…, then each open restaurant's signature dishes (every
  * restaurant's while all are closed — `includeClosed`),
  * interleaved, to fill the row. Only trending dishes carry a rank badge,
@@ -79,7 +80,7 @@ function pick(d: SearchableDish, restaurantName: string, photo: string): RailDis
 }
 
 /**
- * Home's horizontal photo row, "Campus favourites": trending dishes (with
+ * Home's horizontal photo row, "Handi's picks": trending dishes (with
  * #1, #2… badges) then signature dishes. Each card opens the menu at that
  * dish (?dish=). Bleeds to the screen edges and snaps card by card.
  */
@@ -88,17 +89,11 @@ export function PopularRail({ rail }: { rail: Rail }) {
   const hasTrending = rail.dishes.some((d) => d.rank);
 
   return (
-    <section aria-labelledby="popular-heading" className="mt-9">
-      <div className="flex flex-wrap items-end justify-between gap-x-3">
-        <h2 id="popular-heading" className="flex items-center gap-2 font-display text-title font-bold whitespace-nowrap">
-          <Flame className="size-5.5 text-primary" aria-hidden="true" />
-          Campus favourites
-        </h2>
-        <p className="pb-0.5 text-sm text-muted-foreground">
-          {hasTrending ? "Most ordered first" : "Signature dishes"}
-        </p>
-      </div>
-      <ul className="-mx-6 mt-3 flex snap-x snap-mandatory scroll-px-6 gap-3 overflow-x-auto px-6 pt-1 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <section aria-labelledby="popular-heading" className="mt-8">
+      <SectionTitle id="popular-heading" aside={hasTrending ? "Most ordered first" : "Signature dishes"}>
+        Handi&apos;s picks
+      </SectionTitle>
+      <ul className="-mx-6 mt-2 flex snap-x snap-mandatory scroll-px-6 gap-3.5 overflow-x-auto px-6 pt-2 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {rail.dishes.map((d, i) => (
           <li
             key={d.id}
@@ -108,9 +103,13 @@ export function PopularRail({ rail }: { rail: Rail }) {
             <Link
               href={`/restaurants/${d.restaurantId}?dish=${d.id}`}
               transitionTypes={["nav-forward"]}
-              className="pressable group block rounded-[1.25rem] outline-none focus-visible:ring-3 focus-visible:ring-ring/80"
+              // A photo print, tilted a touch each way like it's been stuck in a scrapbook.
+              className={cn(
+                "paper pressable group block border bg-card p-1.5 pb-2.5 shadow-card outline-none focus-visible:ring-3 focus-visible:ring-ring/80",
+                i % 2 === 0 ? "-rotate-1" : "rotate-1",
+              )}
             >
-              <div className="relative aspect-square overflow-hidden rounded-[1.25rem] bg-secondary shadow-card">
+              <div className="relative aspect-square overflow-hidden rounded-[1rem] bg-secondary">
                 <BlurImage
                   src={d.photo}
                   alt=""
@@ -126,9 +125,11 @@ export function PopularRail({ rail }: { rail: Rail }) {
                   <VegMark isVeg={d.isVeg} className="size-3.5 [&>span]:size-1.5" />
                 </span>
               </div>
-              <p className="mt-2 line-clamp-2 text-sm leading-snug font-semibold">{d.name}</p>
-              <p className="truncate text-xs text-muted-foreground">{d.restaurantName}</p>
-              <p className="mt-0.5 font-heading font-bold text-primary">{formatRupees(d.price)}</p>
+              <div className="px-1">
+                <p className="mt-2 line-clamp-2 text-sm leading-snug font-semibold">{d.name}</p>
+                <p className="truncate text-xs text-muted-foreground">{d.restaurantName}</p>
+                <p className="mt-0.5 font-heading font-bold text-primary">{formatRupees(d.price)}</p>
+              </div>
             </Link>
           </li>
         ))}

@@ -52,7 +52,7 @@
 }
 
 /*
- * Type scale — the named steps for display text (Fraunces via font-heading).
+ * Type scale — the named steps for display text (Baloo 2 via font-heading).
  * Body copy keeps Tailwind's text-sm/text-base; everything bigger than a
  * card title should come from here rather than one-off text-[2.5rem]s.
  *   display   login / welcome hero
@@ -284,11 +284,6 @@
   --elevation-card: 0 1px 2px rgb(15 59 42 / 6%), 0 8px 22px -10px rgb(212 165 55 / 22%);
   --elevation-raised: 0 2px 4px rgb(15 59 42 / 6%), 0 16px 32px -12px rgb(154 116 22 / 24%);
   --elevation-overlay: 0 4px 8px rgb(15 59 42 / 8%), 0 24px 48px -12px rgb(15 59 42 / 28%);
-
-  /* Home header ambient field, three stops per time of day — see
-     .mood-field below and HomeHeader. Alpha is baked into each stop so the
-     field reads clearly on ivory while the pine heading on top of its
-     densest point stays above 7:1. */
   /* Palette pieces: the brand gradient
      (food ring, progress bars, milestone rings), dialog backdrops, the
      switch knob's icon, the promo's warm light, confetti. */
@@ -305,35 +300,19 @@
   --confetti-5: #0f3b2a;
   --show-pine: block;
   --app-sans: var(--font-jakarta);
-  --app-heading: var(--font-fraunces), var(--font-jakarta);
-  /* Section / page headings (font-display): Cormorant Garamond, the free
-     stand-in for Del Rose. */
-  --app-display: var(--font-cormorant), var(--font-fraunces), serif;
+  --app-heading: var(--font-baloo), var(--font-jakarta);
+  --app-display: var(--font-baloo), var(--font-jakarta);
   --primary-2: #6e5410;
+  /* ScriptName's ink: pine → rose → amber. */
+  --heading-a: #14301f;
+  --heading-b: #1d5a40;
+  --heading-c: #6b5210;
   --surface-primary: linear-gradient(180deg, rgb(255 255 255 / 18%), transparent 50%),
     linear-gradient(115deg, var(--primary) 0%, var(--primary-2) 100%);
   --hero-surface: radial-gradient(60% 45% at 18% 0%, rgb(255 255 255 / 9%), transparent 70%),
     radial-gradient(90% 80% at 100% 0%, var(--hero-glow), transparent 65%),
     radial-gradient(70% 60% at 0% 100%, var(--hero-bloom), transparent 70%),
     linear-gradient(150deg, var(--hero-a) 0%, var(--hero-b) 55%, var(--hero-c) 100%);
-  /* Home's headline gradient (text-heading): pine → rose → amber, the
-     brand's three colours. */
-  --heading-a: #14301f;
-  --heading-b: #1d5a40;
-  --heading-c: #6b5210;
-
-  --mood-morning-a: #f0cf7acc;
-  --mood-morning-b: #f1eccb;
-  --mood-morning-c: #d9bf6a66;
-  --mood-afternoon-a: #d9bf6aaa;
-  --mood-afternoon-b: #f4ead0;
-  --mood-afternoon-c: #f0cf7a88;
-  --mood-evening-a: #b6d2bdcc;
-  --mood-evening-b: #f1eccb;
-  --mood-evening-c: #d9bf6a55;
-  --mood-night-a: #5e937899;
-  --mood-night-b: #b6d2bdcc;
-  --mood-night-c: #e3eadb;
 }
 
 /* Dark: pine-tinted grounds (not neutral grey) so the brand survives at
@@ -414,62 +393,29 @@
   --heading-a: #f2efdc;
   --heading-b: #cfe3c8;
   --heading-c: #e8c46a;
-
-  --mood-morning-a: #b8943a66;
-  --mood-morning-b: #2f7a5555;
-  --mood-morning-c: #5e471088;
-  --mood-afternoon-a: #e0b64a55;
-  --mood-afternoon-b: #5e471099;
-  --mood-afternoon-c: #2f7a5544;
-  --mood-evening-a: #2f7a5599;
-  --mood-evening-b: #0f3b2acc;
-  --mood-evening-c: #b8943a44;
-  --mood-night-a: #0f3b2a;
-  --mood-night-b: #0f4a38cc;
-  --mood-night-c: #2f7a5555;
 }
 
-/*
- * Home header's time-of-day ambient field: a top-down wash of the mood's
- * middle colour, a broad light source from the top-left and a second one
- * low and to the right, all fading out downward into the ground, so the header has an atmosphere instead of a hard band. On
- * screens wider than the app column the sides fade too, so the field
- * never ends in a visible vertical edge.
- */
-.mood-field {
-  background:
-    radial-gradient(95% 110% at 0% 0%, var(--mood-a), transparent 70%),
-    radial-gradient(110% 70% at 70% 80%, var(--mood-c), transparent 70%),
-    linear-gradient(var(--mood-b), transparent);
-  mask-image: linear-gradient(to bottom, #000 45%, transparent);
+/* Hand-cut paper: no two corners quite the same. */
+@utility paper {
+  border-radius: 1.55rem 1.3rem 1.6rem 1.35rem / 1.35rem 1.6rem 1.3rem 1.55rem;
 }
-@media (min-width: 28rem) {
-  .mood-field {
-    mask-image:
-      linear-gradient(to bottom, #000 45%, transparent),
-      linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
-    mask-composite: intersect;
-  }
+/* An arched window, from the campus gate in Handi's scenes, and the arched
+   card around one: the same curve, so the frame stays even all the way round.
+   The curve's height is fixed, so it doesn't change with the card's height. */
+@utility arch {
+  border-radius: 50% 50% 1.2rem 1.2rem / 7rem 7rem 1.2rem 1.2rem;
 }
-.mood-morning {
-  --mood-a: var(--mood-morning-a);
-  --mood-b: var(--mood-morning-b);
-  --mood-c: var(--mood-morning-c);
+@utility arch-card {
+  border-radius: 50% 50% 1.7rem 1.7rem / 7.5rem 7.5rem 1.7rem 1.7rem;
 }
-.mood-afternoon {
-  --mood-a: var(--mood-afternoon-a);
-  --mood-b: var(--mood-afternoon-b);
-  --mood-c: var(--mood-afternoon-c);
-}
-.mood-evening {
-  --mood-a: var(--mood-evening-a);
-  --mood-b: var(--mood-evening-b);
-  --mood-c: var(--mood-evening-c);
-}
-.mood-night {
-  --mood-a: var(--mood-night-a);
-  --mood-b: var(--mood-night-b);
-  --mood-c: var(--mood-night-c);
+/* A bill with a scalloped foot. Masked, so any shadow goes on a parent. */
+@utility receipt {
+  --scallop: 1rem;
+  padding-bottom: calc(var(--scallop) + 1rem);
+  border-radius: 1.4rem 1.4rem 0 0;
+  mask:
+    radial-gradient(circle at 50% 100%, transparent calc(var(--scallop) / 2 - 0.5px), #000 calc(var(--scallop) / 2)) bottom / var(--scallop) var(--scallop) repeat-x,
+    linear-gradient(#000 0 0) top / 100% calc(100% - var(--scallop)) no-repeat;
 }
 
 /* Striped stand-in for photos we don't have yet (matches the design refs). */
@@ -507,20 +453,8 @@
 @utility surface-hero {
   background-image: var(--hero-surface);
 }
-@utility text-heading {
-  background-image: linear-gradient(100deg, var(--heading-a) 0%, var(--heading-b) 50%, var(--heading-c) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  @media (forced-colors: active) {
-    background-image: none;
-    color: CanvasText;
-  }
-}
 .script-name {
-  font-size: 1.15em;
   font-weight: 400;
-  line-height: 1.15;
 }
 .script-word {
   position: relative;
@@ -622,11 +556,6 @@
 }
 /* The top edge of a surface catching the light (for surfaces that don't
    use shadow-card: chips, sheets, the tab bar). */
-/* The turning ring around a chosen "What's on your mind?" tile: the brand's
-   pine, rose and amber chasing each other (animate-ring-spin). */
-@utility food-ring {
-  background: conic-gradient(var(--brand-1), var(--brand-2), var(--brand-3), var(--brand-2), var(--brand-1));
-}
 @utility only-pine {
   display: var(--show-pine);
 }
@@ -645,22 +574,17 @@
   }
   body {
     @apply bg-background text-foreground;
-    /* The sky over every page: two soft lights above the top edge (amber
-       and rose) that fade out within the first screen, so no page sits on
-       a flat, unlit ground. */
+    /* Painted paper: two soft lights over the top of the page, on a fine grain. */
     background-image:
       radial-gradient(70rem 30rem at 110% -12rem, var(--page-glow-a), transparent 70%),
-      radial-gradient(56rem 26rem at -20% -10rem, var(--page-glow-b), transparent 70%);
-    background-repeat: no-repeat;
+      radial-gradient(56rem 26rem at -20% -10rem, var(--page-glow-b), transparent 70%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .28 0 0 0 0 .12 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23g)'/%3E%3C/svg%3E");
+    background-repeat: no-repeat, no-repeat, repeat;
   }
   html {
     @apply font-sans;
   }
-  /* Fraunces at SOFT 50: rounded, friendly terminals instead of the sharp
-     bookish default. Numbers in the display face (prices, tokens, totals)
-     use lining figures, not the old-style ones Fraunces can fall into. */
   .font-heading {
-    font-variation-settings: "SOFT" 50;
     font-variant-numeric: lining-nums;
   }
 }
@@ -849,9 +773,6 @@
   }
   html:is([data-splash="play"], [data-splash="run"]) .channel-wiggle {
     animation-play-state: paused;
-  }
-  .animate-ring-spin {
-    animation: ring-spin 5s linear infinite;
   }
   /* Home promo: the logo tile bobs gently. */
   .animate-float {
@@ -1122,12 +1043,6 @@
   100% {
     opacity: 0;
     translate: 0 -10%;
-  }
-}
-
-@keyframes ring-spin {
-  to {
-    rotate: 1turn;
   }
 }
 

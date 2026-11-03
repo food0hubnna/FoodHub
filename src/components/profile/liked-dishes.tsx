@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BlurImage } from "@/components/blur-image";
-import { Heart } from "lucide-react";
+import { SectionTitle } from "@/components/handi/section-title";
 import { VegMark } from "@/components/veg-mark";
 import type { LikedDish } from "@/lib/data/favorites";
 import { getDishPhoto } from "@/lib/data/dish-photos";
@@ -8,7 +8,7 @@ import { formatRupees } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 /**
- * Profile's "Liked dishes": every dish the student hearted on a menu,
+ * Profile's "Dishes you love": every dish the student hearted on a menu,
  * newest first, as a snap-scrolling row of photo cards that open the menu
  * at that dish (?dish=). Sold-out ones stay, greyed. Empty → a one-line
  * hint pointing at the heart.
@@ -16,16 +16,12 @@ import { cn } from "@/lib/utils";
 export function LikedDishes({ dishes }: { dishes: LikedDish[] }) {
   return (
     <section aria-labelledby="liked-heading" className="mt-8">
-      <div className="flex items-end justify-between gap-3">
-        <h2 id="liked-heading" className="flex items-center gap-2 font-heading text-title font-bold">
-          <Heart className="size-5 fill-primary text-primary" aria-hidden="true" />
-          Liked dishes
-        </h2>
-        {dishes.length > 0 && <p className="pb-0.5 text-sm text-muted-foreground">{dishes.length}</p>}
-      </div>
+      <SectionTitle id="liked-heading" aside={dishes.length > 0 ? dishes.length : undefined}>
+        Dishes you love
+      </SectionTitle>
 
       {dishes.length === 0 ? (
-        <p className="mt-3 rounded-[1.5rem] border bg-card px-5 py-4 text-muted-foreground shadow-card">
+        <p className="mt-3 paper border bg-card px-5 py-4 text-muted-foreground shadow-card">
           Tap the heart on any dish in a menu to keep it here.
         </p>
       ) : (

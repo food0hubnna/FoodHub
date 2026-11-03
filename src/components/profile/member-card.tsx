@@ -1,20 +1,16 @@
 import type { ReactNode } from "react";
-import { HeroMotif } from "@/components/theme/hero-motif";
+import { HandiSticker } from "@/components/handi/handi-says";
 import { ScriptName } from "@/components/theme/script-name";
-import { PassArt } from "@/components/theme/pass-art";
 import { Avatar } from "@/components/taste/avatar";
 import { OpenTasteSheetButton } from "@/components/taste/taste-sheet";
 import { cn } from "@/lib/utils";
 
 /*
- * The profile's "campus pass": the lit pine hero holding who you are and
- * how you order — the student's initials in a pine circle inside a slowly
- * turning pine / rose / amber ring (`food-ring`, still under reduced
- * motion), name and member-since, the weekly-rank pill, and three stat
- * tiles. Numbers use the display face; the no-show count turns hero-danger
- * once it isn't zero, since that's the stat the ban system actually cares
- * about. Stat labels are full-strength ivory (fainter fails on the hero's
- * lit corner at this size).
+ * The top of the profile: the student's "Friend of Handi" card, an arched lit
+ * window holding who they are. Their avatar in a gold ring with Handi beside
+ * it, their name in handwriting, the weekly-rank pill, and three stats on
+ * plates. The no-show count turns hero-danger once it isn't zero, since that's
+ * the stat the ban system actually cares about.
  */
 export function MemberCard({
   initials,
@@ -38,32 +34,25 @@ export function MemberCard({
   noShows: number;
 }) {
   return (
-    <section className="surface-hero glow-hero relative overflow-hidden rounded-[1.75rem] bg-hero p-5 text-hero-foreground">
-      {/* The palette's motif in the corner
-          and its small detail by the label. */}
-      <HeroMotif className="-top-16 -right-16 size-36" />
-      <PassArt className="top-3.5 right-4" />
-      <p className="relative text-label text-hero-accent">Campus pass</p>
-      <div className="relative mt-3 flex items-center gap-4">
+    <section className="arch-card surface-hero glow-hero relative flex flex-col items-center bg-hero px-5 pt-7 pb-5 text-center text-hero-foreground">
+      <p className="text-label text-hero-accent">Friend of Handi</p>
+      <div className="relative mt-3">
         {/* Tapping the avatar opens "Your taste" (the page hosts the sheet). */}
         <OpenTasteSheetButton
           aria-label="Your avatar and taste"
-          className="pressable relative block size-[4.5rem] shrink-0 rounded-full p-[3px] outline-none focus-visible:ring-3 focus-visible:ring-hero-foreground"
+          className="pressable block size-24 rounded-full bg-hero-accent p-[3px] outline-none focus-visible:ring-3 focus-visible:ring-hero-foreground"
         >
-          <span aria-hidden="true" className="food-ring animate-ring-spin absolute inset-0 rounded-full" />
-          <Avatar id={avatar} initials={initials} tone="pass" className="relative size-full text-2xl ring-2 ring-hero" />
+          <Avatar id={avatar} initials={initials} tone="pass" className="size-full text-3xl ring-2 ring-hero" />
         </OpenTasteSheetButton>
-        <div className="min-w-0">
-          <h1 className="font-heading text-title font-bold">
-            <ScriptName text={name} tone="hero" />
-          </h1>
-          <p className="text-sm text-hero-foreground/85">Member since {memberSince}</p>
-        </div>
+        <HandiSticker pose="wave" sizes="64px" className="absolute! -right-11 -bottom-1 size-16" />
       </div>
+      <h1 className="mt-3 max-w-full font-heading text-3xl leading-tight break-words">
+        <ScriptName text={name} tone="hero" className="block leading-[1.15]" />
+      </h1>
+      <p className="mt-0.5 text-sm text-hero-foreground/85">Friends since {memberSince}</p>
+      <div className="mt-3 empty:hidden">{rankBadge}</div>
 
-      <div className="relative mt-4 empty:hidden">{rankBadge}</div>
-
-      <dl className="relative mt-5 grid grid-cols-3 gap-2 text-center">
+      <dl className="mt-5 grid w-full grid-cols-3 gap-2">
         <Stat value={cravingsSolved} label={cravingsSolved === 1 ? "craving solved" : "cravings solved"} />
         <Stat value={streakDays} label="day streak" />
         <Stat value={noShows} label={noShows === 1 ? "no-show" : "no-shows"} danger={noShows > 0} />
@@ -74,9 +63,16 @@ export function MemberCard({
 
 function Stat({ value, label, danger = false }: { value: number; label: string; danger?: boolean }) {
   return (
-    <div className="rim-light flex flex-col-reverse justify-end rounded-2xl bg-hero-foreground/10 px-1 py-2.5">
+    <div className="flex flex-col-reverse items-center justify-end gap-1.5">
       <dt className="text-xs leading-tight text-hero-foreground">{label}</dt>
-      <dd className={cn("font-heading text-2xl font-bold tabular-nums", danger && "text-hero-danger")}>{value}</dd>
+      <dd
+        className={cn(
+          "flex size-16 items-center justify-center rounded-full bg-hero-foreground/10 font-heading text-2xl font-bold tabular-nums ring-1 ring-hero-accent/60",
+          danger && "text-hero-danger",
+        )}
+      >
+        {value}
+      </dd>
     </div>
   );
 }

@@ -10,14 +10,13 @@ export default function Loading() {
       <span className="sr-only">Loading your orders…</span>
 
       <ViewTransition {...REVEAL_EXIT}>
-        <Skeleton className="h-9 w-40" />
-        <Skeleton className="mt-2 h-4 w-56" />
+        <div className="flex items-center gap-1"><Skeleton className="size-24 shrink-0 rounded-full" /><Skeleton className="paper h-20 min-w-0 flex-1" /></div>
 
         <Skeleton className="mt-7 h-4 w-16" />
-        <div className="mt-2 divide-y rounded-3xl border bg-card shadow-card">
+        <div className="mt-2 paper divide-y divide-dashed border bg-card shadow-card">
           {[0, 1, 2, 3].map((i) => (
             <div key={i} className="flex items-center gap-3 py-3.5 pr-3 pl-4">
-              <Skeleton className="size-14 shrink-0 rounded-xl" />
+              <Skeleton className="size-14 shrink-0 rounded-full" />
               <div className="min-w-0 flex-1">
                 <div className="flex justify-between gap-2">
                   <Skeleton className="h-4 w-32" />
