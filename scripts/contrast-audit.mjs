@@ -1,0 +1,137 @@
+// Contrast audit over the token pairs the app actually uses, read straight
+// from src/app/globals.css, with alpha compositing — for every palette
+// in both light and dark. Also fails if a
+// palette leaves out a token the pine blocks define (it would silently
+// inherit pine's value).
+// Run: npm run audit:contrast — exits non-zero if anything fails.
+import fs from 'node:fs';
+const css = fs.readFileSync('src/app/globals.css', 'utf8');
+// Every top-level block whose selector list includes this selector (a
+// block can list several, e.g. ":root,\n[data-palette=\"pine\"]").
+const block = (sel) => {
+  const out = {};
+  for (const m of css.matchAll(/\n((?:[^\n{}@/]+,\n)*[^\n{}@/]+) \{([\s\S]*?)\n\}/g)) {
+    const sels = m[1].split(',').map((x) => x.trim());
+    if (!sels.includes(sel)) continue;
+    for (const x of m[2].matchAll(/--([a-z0-9-]+):\s*([^;]+);/g)) out[x[1]] = x[2].trim();
+  }
+  return out;
+};
+const root = block(':root');
+const dark = block('.dark');
+const themes = {
+  'pine light': root,
+  'pine dark': { ...root, ...dark },
+};
+
+
+const parse = (v) => {
+  v = v.trim();
+  let m = v.match(/^#([0-9a-f]{6})([0-9a-f]{2})?$/i);
+  if (m) return [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16)).concat(m[2] ? parseInt(m[2], 16) / 255 : 1);
+  m = v.match(/^rgb\((\d+) (\d+) (\d+) \/ (\d+)%\)$/);
+  if (m) return [+m[1], +m[2], +m[3], +m[4] / 100];
+  throw new Error('cannot parse ' + v);
+};
+const over = (top, bot) => [0, 1, 2].map((i) => top[i] * top[3] + bot[i] * (1 - top[3])).concat(1);
+const alpha = (c, a) => [c[0], c[1], c[2], c[3] * a];
+const lum = (c) => { const v = c.slice(0, 3).map((x) => x / 255).map((x) => (x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4)); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+
+// [label, fg token, fg alpha, bg stack (bottom first, [token, alpha]), min]
+const T = (t, a = 1) => [t, a];
+const checks = [
+  ['body text on ground', 'foreground', 1, [T('background')], 4.5],
+  ['body text on card', 'foreground', 1, [T('card')], 4.5],
+  ['muted text on ground', 'muted-foreground', 1, [T('background')], 4.5],
+  ['muted text on card', 'muted-foreground', 1, [T('card')], 4.5],
+  ['muted text on secondary chip', 'muted-foreground', 1, [T('secondary')], 4.5],
+  ['muted text on popover', 'muted-foreground', 1, [T('popover')], 4.5],
+  ['search placeholder (muted on secondary)', 'muted-foreground', 1, [T('secondary')], 4.5],
+  ['amber text (prices/links) on ground', 'primary', 1, [T('background')], 4.5],
+  ['amber text on card', 'primary', 1, [T('card')], 4.5],
+  ['button text on amber', 'primary-foreground', 1, [T('primary')], 4.5],
+  ['button text on the action gradient end (primary-2)', 'primary-foreground', 1, [T('primary-2')], 4.5],
+  // Sliders: the tab bar pill's lit icon/label on both ends of its fill, and
+  // a lit switch against the card it sits on.
+  ['tab bar label on the slider', 'slider-foreground', 1, [T('slider')], 4.5],
+  ['tab bar label on the slider end (slider-2)', 'slider-foreground', 1, [T('slider-2')], 4.5],
+  ['lit switch vs card (non-text, 3:1)', 'slider', 1, [T('card')], 3],
+  // Home's headline gradient (text-heading): every stop on the ground and under the sky.
+  ...['heading-a', 'heading-b', 'heading-c'].flatMap((h) => [
+    [`headline ${h} on ground`, h, 1, [T('background')], 4.5],
+    [`headline ${h} under the page sky`, h, 1, [T('background'), T('page-glow-a'), T('page-glow-b')], 4.5],
+  ]),
+  ['rose cuisines on card', 'rose', 1, [T('card')], 4.5],
+  ['rose cuisines on ground (menu sheet)', 'rose', 1, [T('background')], 4.5],
+  ['blush chip text', 'brand-soft-foreground', 1, [T('brand-soft')], 4.5],
+  ['success text on success-soft chip', 'success', 1, [T('success-soft')], 4.5],
+  ['success text on card', 'success', 1, [T('card')], 4.5],
+  ['destructive text on card', 'destructive', 1, [T('card')], 4.5],
+  ['destructive text on destructive/10 over card', 'destructive', 1, [T('card'), T('destructive', 0.1)], 4.5],
+  ['destructive text on destructive/5 over card (outlined buttons)', 'destructive', 1, [T('card'), T('destructive', 0.05)], 4.5],
+  ['text on success fill', 'success-foreground', 1, [T('success')], 4.5],
+  ['text on destructive fill', 'destructive-foreground', 1, [T('destructive')], 4.5],
+  // bg-ink is now only the selected-chip / count-badge colour (hero surfaces moved to --hero-*).
+  ['selected chip text on ink', 'ink-foreground', 1, [T('ink')], 4.5],
+  // Selected chips are lit (surface-ink): check the far end and the top shine too.
+  ['selected chip text on the chip gradient end (ink-2)', 'ink-foreground', 1, [T('ink-2')], 4.5],
+  ['selected chip text under the chip shine (ink + white/14)', 'ink-foreground', 1, [T('ink'), T('#ffffff', 0.14)], 4.5],
+  ['ink-accent on ink', 'ink-accent', 1, [T('ink')], 4.5],
+  ['ink-success on ink', 'ink-success', 1, [T('ink')], 4.5],
+  ['ink-danger on ink', 'ink-danger', 1, [T('ink')], 4.5],
+  ['ink-danger on ink-foreground/10 over ink (Pause ordering)', 'ink-danger', 1, [T('ink'), T('ink-foreground', 0.1)], 4.5],
+  ['ink text on ink-success fill (Turn ordering on)', 'ink', 1, [T('ink-success')], 4.5],
+  ['ink text on ink-foreground/10 chip over ink', 'ink-foreground', 1, [T('ink'), T('ink-foreground', 0.1)], 4.5],
+  ['frosted chip text (muted on card/90 over ink-ish photo)', 'muted-foreground', 1, [T('ink'), T('card', 0.9)], 4.5],
+  ['success on frosted chip (card/90 over dark photo)', 'success', 1, [T('ink'), T('card', 0.9)], 4.5],
+  // Hero (surface-hero): every stop, plus the amber light over the lightest
+  // pine (the top-right corner) and the rose bloom over the deepest.
+  ...[
+    ['stop a', [T('hero-a')]],
+    ['stop b', [T('hero-b')]],
+    ['stop c', [T('hero-c')]],
+    ['amber light over stop a', [T('hero-a'), T('hero-glow')]],
+    ['amber light over stop b', [T('hero-b'), T('hero-glow')]],
+    ['rose bloom over stop c', [T('hero-c'), T('hero-bloom')]],
+  ].flatMap(([where, bg]) => [
+    [`hero text on hero ${where}`, 'hero-foreground', 1, bg, 4.5],
+    [`hero text/85 on hero ${where}`, 'hero-foreground', 0.85, bg, 4.5],
+    [`hero-accent on hero ${where}`, 'hero-accent', 1, bg, 4.5],
+    [`hero-success on hero ${where}`, 'hero-success', 1, bg, 4.5],
+    [`hero-danger on hero ${where}`, 'hero-danger', 1, bg, 4.5],
+    [`hero text on hero-foreground/10 chip over ${where}`, 'hero-foreground', 1, [...bg, T('hero-foreground', 0.1)], 4.5],
+    [`hero-danger on hero-foreground/10 chip over ${where}`, 'hero-danger', 1, [...bg, T('hero-foreground', 0.1)], 4.5],
+  ]),
+  ['hero text on hero-foreground fill (active switch)', 'hero', 1, [T('hero-foreground')], 4.5],
+  ['hero text on hero-success fill', 'hero', 1, [T('hero-success')], 4.5],
+  // The sky over the top of every page.
+  ['body text under the page sky', 'foreground', 1, [T('background'), T('page-glow-a'), T('page-glow-b')], 4.5],
+  ['muted text under the page sky', 'muted-foreground', 1, [T('background'), T('page-glow-a'), T('page-glow-b')], 4.5],
+  ['amber text under the page sky', 'primary', 1, [T('background'), T('page-glow-a'), T('page-glow-b')], 4.5],
+  // Status chips (statusBadge).
+  ['Placed chip (amber-soft)', 'amber-soft-foreground', 1, [T('amber-soft')], 4.5],
+  ['Confirmed chip (pine-soft)', 'pine-soft-foreground', 1, [T('pine-soft')], 4.5],
+  ['amber button vs ground (non-text, 3:1)', 'primary', 1, [T('background')], 3.0],
+  ['input border vs card (non-text, 3:1 — WCAG 1.4.11)', 'input', 1, [T('card')], 3.0],
+  ['focus ring (ring/80) vs card (non-text, 3:1)', 'ring', 0.8, [T('card')], 3.0],
+];
+
+let fails = 0;
+for (const [name, t] of Object.entries(themes)) {
+  console.log(`\n== ${name}`);
+  for (const [label, fg, fa, stack, min] of checks) {
+    let bg = [255, 255, 255, 1];
+    // A stack entry is a token name, or a literal '#rrggbb' (e.g. a white shine).
+    // Follow plain var(--x) references.
+    const val = (tok) => { let v = t[tok]; for (let m; (m = /^var\(--([a-z0-9-]+)\)$/.exec(v ?? '')); ) v = t[m[1]]; return v; };
+    for (const [tok, a] of stack) bg = over(alpha(parse(tok.startsWith('#') ? tok : val(tok)), a), bg);
+    const fgc = over(alpha(parse(val(fg)), fa), bg);
+    const r = ratio(fgc, bg);
+    const ok = r >= min;
+    if (!ok) fails++;
+    console.log(`${ok ? '  ok ' : 'FAIL '} ${r.toFixed(2).padStart(5)}  (min ${min})  ${label}`);
+  }
+}
+console.log(`\n${fails} failing pair(s)`);
+process.exitCode = fails ? 1 : 0;

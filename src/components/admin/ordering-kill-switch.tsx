@@ -1,0 +1,136 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { Loader2, Power } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { setOrderingMode } from "@/lib/admin/actions";
+import type { OrderingMode, OrderingState } from "@/lib/ordering";
+import { openPushNote } from "@/lib/notifications/open-note";
+import { toast } from "@/lib/toast/store";
+import { cn } from "@/lib/utils";
+
+const MODES: { mode: OrderingMode; label: string }[] = [
+  { mode: "open", label: "Open" },
+  { mode: "closed", label: "Closed" },
+];
+
+const CONFIRM: Record<OrderingMode, { title: string; body: string; action: string }> = {
+  open: {
+    title: "Open ordering?",
+    body: "Students can order right away from every restaurant that's turned on. It stays open until you close it. Orders placed after 7:00 PM have no delivery slot — their ticket says delivery time to be confirmed.",
+    action: "Open ordering",
+  },
+  closed: {
+    title: "Close ordering campus-wide?",
+    body: "No student can place a new order until you open it again, and every restaurant is turned off. When you reopen, turn on the restaurants you want. Orders already placed aren't affected.",
+    action: "Close ordering",
+  },
+};
+
+/**
+ * Footer row of the dashboard's pine "Today" card: the campus Open / Closed
+ * switch (app_settings.ordering_mode — no daily schedule). The status comes
+ * from the server (getOrderingState) and is re-fetched after every change.
+ */
+export function OrderingKillSwitch({ ordering }: { ordering: OrderingState }) {
+  const router = useRouter();
+  const [target, setTarget] = useState<OrderingMode | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  const status = ordering.open ? "Open until you close it" : "Closed until you open it";
+
+  function confirm() {
+    if (!target) return;
+    startTransition(async () => {
+      const result = await setOrderingMode(target);
+      if (result.ok) {
+        toast.success(
+          target === "open" ? `Ordering is open.${openPushNote(result.push)}` : "Ordering is closed.",
+        );
+        setTarget(null);
+        router.refresh();
+      } else {
+        toast.error(result.error);
+      }
+    });
+  }
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex min-w-0 items-start gap-3">
+        <span
+          className={cn(
+            "mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full",
+            ordering.open ? "bg-hero-success/20 text-hero-success" : "bg-hero-danger/20 text-hero-danger",
+          )}
+          aria-hidden="true"
+        >
+          <Power className="size-4.5" />
+        </span>
+        <div className="min-w-0">
+          <p className="font-semibold">{ordering.open ? "Students can order now" : "Ordering is closed"}</p>
+          <p className="max-w-md text-sm text-hero-foreground/85">{status}</p>
+        </div>
+      </div>
+
+      <div
+        role="radiogroup"
+        aria-label="Ordering mode"
+        className="flex shrink-0 rounded-full bg-hero-foreground/10 p-1"
+      >
+        {MODES.map(({ mode, label }) => {
+          const active = ordering.mode === mode;
+          return (
+            <button
+              key={mode}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => !active && setTarget(mode)}
+              className={cn(
+                "h-9 rounded-full px-4 text-sm font-bold outline-none focus-visible:ring-3 focus-visible:ring-hero-foreground/60",
+                active ? "bg-hero-foreground text-hero" : "text-hero-foreground/85 hover:text-hero-foreground",
+              )}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
+      <AlertDialog open={target !== null} onOpenChange={(next) => !next && !pending && setTarget(null)}>
+        <AlertDialogContent>
+          {target && (
+            <>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{CONFIRM[target].title}</AlertDialogTitle>
+                <AlertDialogDescription>{CONFIRM[target].body}</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={pending}
+                  onClick={confirm}
+                  variant={target === "closed" ? "danger" : "default"}
+                >
+                  {pending && <Loader2 className="size-4 animate-spin" />}
+                  {CONFIRM[target].action}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </>
+          )}
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}

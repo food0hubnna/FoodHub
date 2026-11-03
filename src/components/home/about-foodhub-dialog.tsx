@@ -1,0 +1,58 @@
+"use client";
+
+import type { ReactNode } from "react";
+import { BrandLogo } from "@/components/brand-logo";
+import { MessageCircle } from "lucide-react";
+import { HeroMotif } from "@/components/theme/hero-motif";
+import { WHATSAPP_GROUP_URL } from "@/lib/support";
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
+/** Tapping the Home logo pops up a short "what is this app" card — mostly for first-time visitors poking around. */
+export function AboutFoodHubDialog({ children }: { children: ReactNode }) {
+  return (
+    <Dialog>
+      <DialogTrigger
+        aria-label="About FoodHub"
+        // The logo tile is the button: a ring in the
+        // action colour, a slow glow and two ripples after the splash
+        // (.logo-beacon), so it reads as tappable.
+        className="logo-beacon pressable relative shrink-0 rounded-2xl shadow-card ring-2 ring-primary/40 outline-none hover:ring-primary/70 focus-visible:ring-3 focus-visible:ring-ring/80"
+      >
+        {children}
+      </DialogTrigger>
+      <DialogContent
+        // The close button sits on the hero strip, so it takes the hero's ink.
+        className="flex flex-col items-center overflow-hidden text-center [&_[data-slot=dialog-close-button]]:text-hero-foreground [&_[data-slot=dialog-close-button]]:hover:bg-hero-foreground/15"
+      >
+        {/* A strip of the lit hero with the palette's motif, the logo rising out of it. */}
+        <div aria-hidden="true" className="surface-hero relative -mx-6 -mt-6 h-24 self-stretch overflow-hidden bg-hero">
+          <HeroMotif className="-bottom-16 left-1/2 size-40 -translate-x-1/2" />
+        </div>
+        <BrandLogo className="relative -mt-10 size-18 rounded-[1.4rem] shadow-raised ring-4 ring-card" />
+        <DialogTitle className="mt-3 text-title">FoodHub</DialogTitle>
+        <p className="text-sm font-semibold text-primary">For the campus cravings</p>
+        <DialogDescription className="mt-3 leading-relaxed">
+          Food delivery built for VIT-AP campus — biryani, combo packs and family buckets from
+          real partner restaurants near you.
+        </DialogDescription>
+        <p className="mt-3 text-sm text-muted-foreground">
+          Cash on delivery · Pickup at VIT-AP Main Gate
+          <br />
+          Scan and pay through UPI too
+        </p>
+        <p className="mt-4 text-label text-primary">
+          Fast · Reliable · Affordable
+        </p>
+        <a
+          href={WHATSAPP_GROUP_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 flex h-10 items-center gap-2 rounded-full border bg-card px-4 text-sm font-semibold shadow-card outline-none hover:border-ring/50 focus-visible:ring-3 focus-visible:ring-ring/80"
+        >
+          <MessageCircle className="size-5 text-success" aria-hidden="true" />
+          Join our WhatsApp group
+        </a>
+      </DialogContent>
+    </Dialog>
+  );
+}

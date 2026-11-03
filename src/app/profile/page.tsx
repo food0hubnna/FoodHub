@@ -1,0 +1,180 @@
+import type { Metadata } from "next";
+import { ViewTransition } from "react";
+import { Bell, Flame, Lock, Mail, MapPin, SunMoon, Volume2 } from "lucide-react";
+import { IconTile } from "@/components/icon-tile";
+import { MemberCard } from "@/components/profile/member-card";
+import { LikedDishes } from "@/components/profile/liked-dishes";
+import { initialsOf } from "@/components/taste/avatar";
+import { OpenTasteSheetButton, TasteSheetHost } from "@/components/taste/taste-sheet";
+import { getTasteProfile } from "@/lib/data/taste";
+import { heartCravings, tasteSummary } from "@/lib/taste/options";
+import { getUnlockedMilestones, MilestoneBadges } from "@/components/profile/milestone-badges";
+import { MilestoneUnlockWatcher } from "@/components/profile/milestone-unlock-watcher";
+import { NotificationToggle } from "@/components/notifications/notification-toggle";
+import { SoundToggle } from "@/components/profile/sound-toggle";
+import { SupportCard } from "@/components/profile/support-card";
+import { ChannelCard } from "@/components/channel/channel-card";
+import { WeeklyRankBadge } from "@/components/profile/weekly-rank-badge";
+import { ThemeIconToggle } from "@/components/theme/theme-icon-toggle";
+import { getOrderStats, hasActiveOrder } from "@/lib/data/orders";
+import { getMyWeeklyRank } from "@/lib/data/rank";
+import { getRestaurantCount } from "@/lib/data/restaurants";
+import { getLikedDishes } from "@/lib/data/favorites";
+import { getMilestoneRewardClaimedAt } from "@/lib/data/rewards";
+import { formatMonthYear } from "@/lib/date";
+import { NAV_TRANSITION, REVEAL_ENTER } from "@/lib/nav-transition";
+import { requireProfile } from "@/lib/profile";
+import { EditableName } from "./editable-name";
+import { EditablePhone } from "./editable-phone";
+import { ACTIVE_ORDER_PHONE_LOCK_MESSAGE, BANNED_PHONE_LOCK_MESSAGE } from "./phone-lock";
+import { SignOutButton } from "./sign-out-button";
+
+export const metadata: Metadata = { title: "Profile · FoodHub", robots: { index: false, follow: false } };
+
+
+export default async function ProfilePage() {
+  // Kicked off up front rather than after requireProfile() resolves —
+  // neither needs the profile, so there's no reason to make them wait
+  // behind that lookup instead of running alongside it.
+  const profilePromise = requireProfile();
+  const totalRestaurantsPromise = getRestaurantCount();
+  const weeklyRankPromise = getMyWeeklyRank();
+
+  const profile = await profilePromise;
+  const [orderInProgress, orderStats, totalRestaurants, weeklyRank, rewardClaimedAt, liked, taste] = await Promise.all([
+    hasActiveOrder(profile.id),
+    getOrderStats(profile.id),
+    totalRestaurantsPromise,
+    weeklyRankPromise,
+    getMilestoneRewardClaimedAt(profile.id),
+    getLikedDishes(profile.id),
+    getTasteProfile(profile.id),
+  ]);
+  const initials = initialsOf(profile.full_name);
+
+  // Mirrors the precedence in profile/actions.ts's updatePhone — that
+  // server check is the real enforcement; this just tells the UI which
+  // message (if any) to show instead of the Edit button.
+  const phoneLockReason = profile.is_banned
+    ? BANNED_PHONE_LOCK_MESSAGE
+    : orderInProgress
+      ? ACTIVE_ORDER_PHONE_LOCK_MESSAGE
+      : null;
+
+  const unlockedMilestones = getUnlockedMilestones(
+    orderStats.deliveredCount,
+    orderStats.restaurantsVisited,
+    totalRestaurants,
+  );
+
+  return (
+    <main className="mx-auto w-full max-w-md px-6 pt-6 pb-28">
+      <MilestoneUnlockWatcher unlockedCsv={unlockedMilestones.join(",")} />
+      <TasteSheetHost taste={taste} initials={initials} fromHearts={heartCravings(liked)} />
+      <ViewTransition {...NAV_TRANSITION}>
+        <ViewTransition {...REVEAL_ENTER}>
+          <MemberCard
+            initials={initials}
+            avatar={taste.avatar}
+            name={profile.full_name}
+            memberSince={formatMonthYear(profile.created_at)}
+            rankBadge={<WeeklyRankBadge rank={weeklyRank} />}
+            cravingsSolved={orderStats.deliveredCount}
+            streakDays={orderStats.streakDays}
+            noShows={orderStats.cancelledCount}
+          />
+
+          <MilestoneBadges
+            deliveredCount={orderStats.deliveredCount}
+            restaurantsVisited={orderStats.restaurantsVisited}
+            totalRestaurants={totalRestaurants}
+            rewardClaimedAt={rewardClaimedAt}
+          />
+
+          <LikedDishes dishes={liked} />
+
+          <h2 className="mt-8 font-display text-title font-bold">Your details</h2>
+          <p className="text-sm text-muted-foreground">Tap a field to edit it.</p>
+          <div className="mt-3 divide-y overflow-hidden rounded-[1.5rem] border bg-card shadow-card">
+            <EditableName initialValue={profile.full_name} />
+            <EditablePhone
+              initialValue={profile.phone}
+              lockedReason={phoneLockReason}
+              banned={profile.is_banned}
+            />
+            <div className="flex items-center gap-3 px-5 py-4">
+              <IconTile>
+                <Flame className="size-5" aria-hidden="true" />
+              </IconTile>
+              <div className="min-w-0 flex-1">
+                <p className="text-label text-muted-foreground">Your taste</p>
+                <p className="mt-0.5 font-semibold">{tasteSummary(taste) || "Not set yet"}</p>
+              </div>
+              <OpenTasteSheetButton
+                aria-label="Edit your taste and avatar"
+                className="shrink-0 rounded-full bg-brand-soft px-3.5 py-1.5 text-sm font-semibold text-brand-soft-foreground outline-none hover:brightness-95 focus-visible:ring-2 focus-visible:ring-ring/80"
+              >
+                Edit
+              </OpenTasteSheetButton>
+            </div>
+            <div className="flex items-center gap-3 px-5 py-4">
+              <IconTile>
+                <Mail className="size-5" aria-hidden="true" />
+              </IconTile>
+              <div className="min-w-0 flex-1">
+                <p className="text-label text-muted-foreground">Email · signed in with Google</p>
+                <p className="mt-0.5 truncate font-semibold">{profile.email}</p>
+              </div>
+              <Lock className="size-4 shrink-0 text-muted-foreground" aria-label="Can't be changed" />
+            </div>
+            <div className="flex items-center gap-3 px-5 py-4">
+              <IconTile>
+                <MapPin className="size-5" aria-hidden="true" />
+              </IconTile>
+              <div>
+                <p className="text-label text-muted-foreground">Handover point</p>
+                <p className="font-semibold">VIT-AP Main Gate</p>
+              </div>
+            </div>
+          </div>
+
+          <h2 className="mt-8 font-display text-title font-bold">Settings</h2>
+          <div className="mt-3 divide-y overflow-hidden rounded-[1.5rem] border bg-card shadow-card">
+            <div className="flex items-center gap-3 px-5 py-3.5">
+              <IconTile>
+                <SunMoon className="size-5" aria-hidden="true" />
+              </IconTile>
+              <p className="min-w-0 flex-1 font-semibold">Appearance</p>
+              <ThemeIconToggle />
+            </div>
+            <div className="flex items-center gap-3 px-5 py-3.5">
+              <IconTile>
+                <Bell className="size-5" aria-hidden="true" />
+              </IconTile>
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold">Order notifications</p>
+                <p className="text-sm text-muted-foreground">Confirmed, delivered and cancelled.</p>
+              </div>
+              <NotificationToggle />
+            </div>
+            <div className="flex items-center gap-3 px-5 py-3.5">
+              <IconTile>
+                <Volume2 className="size-5" aria-hidden="true" />
+              </IconTile>
+              <p className="min-w-0 flex-1 font-semibold">Order placed sound</p>
+              <SoundToggle />
+            </div>
+          </div>
+
+          <SupportCard />
+          <ChannelCard />
+
+          <div className="mt-6">
+            <SignOutButton />
+          </div>
+        </ViewTransition>
+      </ViewTransition>
+
+    </main>
+  );
+}
