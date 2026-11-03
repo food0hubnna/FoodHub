@@ -1,0 +1,444 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Drumstick, Leaf, Search, SearchX, UtensilsCrossed, X, type LucideIcon } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
+import { CartBar } from "@/components/cart/cart-bar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { VegMark } from "@/components/veg-mark";
+import { addToCart, conflictsWithCart, setQuantity, useCart } from "@/lib/cart/store";
+import { AllCategoriesIcon, getCuisineIcon } from "@/lib/cuisine-icons";
+import type { AddonOption, Dish, MenuSection, Restaurant } from "@/lib/data/types";
+import { cn } from "@/lib/utils";
+import { getDishPhoto } from "@/lib/data/dish-photos";
+import { menuItems, type MenuItem } from "@/lib/menu/portions";
+import type { OffersState } from "@/lib/offers";
+import { AddonSheet } from "./addon-sheet";
+import { DishCard } from "./dish-card";
+import { PortionSheet, type PortionPick } from "./portion-sheet";
+
+const ALL = "all";
+const sectionKey = (s: MenuSection) => s.category?.id ?? "uncategorized";
+const sectionName = (s: MenuSection) => s.category?.name ?? "More";
+
+export function MenuView({
+  restaurant,
+  sections,
+  profilePhone,
+  orderingEnabled,
+  closedChip = "Closed",
+  closedNote,
+  favoriteDishId,
+  highlyReorderedDishIds,
+  likedDishIds = [],
+  spiceLevel = null,
+  offers,
+  focusDishId = null,
+}: {
+  restaurant: Restaurant;
+  sections: MenuSection[];
+  profilePhone: string;
+  /** Campus-wide kill switch — dishes become un-addable when off, same as a closed restaurant. */
+  orderingEnabled: boolean;
+  /** "Closed" — shown on dish cards while ordering is shut. */
+  closedChip?: string;
+  /** "Ordering is closed right now" — shown in the cart while ordering is shut. */
+  closedNote?: string;
+  /** This student's most-ordered dish at this restaurant, or null — tags it "Your favorite". */
+  favoriteDishId: string | null;
+  /** Dishes campus-wide with a strong repeat-purchase signal — tags them "Highly re-ordered". */
+  highlyReorderedDishIds: Set<string>;
+  /** Dishes on this menu the student has hearted (favorite_dishes). */
+  likedDishIds?: string[];
+  /** The taste profile's spice answer — the cart's one-tap spice note. */
+  spiceLevel?: number | null;
+  /** Discount offers the admin has on — the cart's "Apply discount" bar. */
+  offers?: OffersState;
+  /** Dish to scroll to and briefly highlight on arrival (from ?dish=). */
+  focusDishId?: string | null;
+}) {
+  const cart = useCart();
+  const [filter, setFilter] = useState(ALL);
+  const [diet, setDiet] = useState<Diet>("all");
+  const [query, setQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [highlighted, setHighlighted] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!focusDishId) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let clear: ReturnType<typeof setTimeout> | undefined;
+    // Waits out the page's slide-in view transition (~400ms, see
+    // globals.css) so the scroll doesn't fight it; instant with reduced motion.
+    const start = setTimeout(
+      () => {
+        const el = document.getElementById(`dish-${focusDishId}`);
+        if (!el) return;
+        el.scrollIntoView({ block: "center", behavior: reduceMotion ? "auto" : "smooth" });
+        setHighlighted(focusDishId);
+        clear = setTimeout(() => setHighlighted(null), 3200);
+      },
+      reduceMotion ? 0 : 350,
+    );
+    return () => {
+      clearTimeout(start);
+      clearTimeout(clear);
+    };
+  }, [focusDishId]);
+  // Dish (with its chosen extras) waiting on "replace your cart?" confirmation.
+  const [pendingAdd, setPendingAdd] = useState<{ dish: Dish; addons: AddonOption[]; quantity: number } | null>(
+    null,
+  );
+  // Dish whose "Add extras" sheet is open, with the extras its section offers.
+  const [addonTarget, setAddonTarget] = useState<{ dish: Dish; addons: AddonOption[] } | null>(null);
+  // Sized dish (Apples 500 g / 1 kg…) whose "Choose a size" sheet is open.
+  const [portionPick, setPortionPick] = useState<PortionPick | null>(null);
+
+  const cartRestaurant = { id: restaurant.id, name: restaurant.name };
+  // Every line of this dish counts — the same dish with different extras is
+  // several lines.
+  const quantityOf = (dishId: string) =>
+    cart.restaurantId === restaurant.id
+      ? cart.lines.filter((l) => l.dishId === dishId).reduce((sum, l) => sum + l.quantity, 0)
+      : 0;
+
+  function closeSearch() {
+    setQuery("");
+    setSearchOpen(false);
+  }
+
+  function commitAdd(dish: Dish, addons: AddonOption[] = [], quantity = 1) {
+    if (conflictsWithCart(restaurant.id)) {
+      // One modal at a time: the size sheet gives way to "Start a new cart?".
+      setPortionPick(null);
+      setPendingAdd({ dish, addons, quantity });
+    } else addToCart(cartRestaurant, dish, { addons, quantity });
+  }
+
+  // Dishes in a section with extras open the "Add extras" sheet first;
+  // everything else keeps the one-tap add.
+  function handleAdd(dish: Dish, sectionAddons: AddonOption[]) {
+    if (sectionAddons.length > 0) setAddonTarget({ dish, addons: sectionAddons });
+    else commitAdd(dish);
+  }
+
+  const q = query.trim().toLowerCase();
+  // Searching looks across the whole menu, not just the selected category
+  // chip — a student searching usually doesn't know (or care) which
+  // category something's in.
+  const byCategory = q || filter === ALL ? sections : sections.filter((s) => sectionKey(s) === filter);
+  // Veg / Non-veg only matter on a menu that has both; an all-veg juice bar
+  // or an all-chicken biryani shop gets no toggles.
+  const hasVeg = sections.some((s) => s.dishes.some((d) => d.is_veg));
+  const hasNonVeg = sections.some((s) => s.dishes.some((d) => !d.is_veg));
+  const showDiet = hasVeg && hasNonVeg;
+  const byDiet =
+    diet === "all"
+      ? byCategory
+      : byCategory
+          .map((s) => ({ ...s, dishes: s.dishes.filter((d) => d.is_veg === (diet === "veg")) }))
+          .filter((s) => s.dishes.length > 0);
+  const visible = q
+    ? byDiet
+        .map((s) => ({ ...s, dishes: s.dishes.filter((d) => d.name.toLowerCase().includes(q)) }))
+        .filter((s) => s.dishes.length > 0)
+    : byDiet;
+
+  const chips = [{ key: ALL, name: "All" }, ...sections.map((s) => ({ key: sectionKey(s), name: sectionName(s) }))];
+
+  return (
+    <>
+      {sections.length > 0 && (
+        // One sticky row for every way of narrowing the menu — search, then
+        // a scrolling rail of Veg / Non-veg and the categories — so none of
+        // them scroll away on a 40-dish menu. Search collapses to an icon
+        // and expands in place over the rail.
+        <div className="sticky top-0 z-10 -mx-6 border-b bg-background/95 px-6 py-2.5 backdrop-blur">
+          <div className="flex items-center gap-2">
+            {searchOpen ? (
+              <label className="relative min-w-0 flex-1">
+                <span className="sr-only">Search dishes</span>
+                <Search
+                  className="pointer-events-none absolute top-1/2 left-3.5 z-10 size-4 -translate-y-1/2 text-primary"
+                  aria-hidden="true"
+                />
+                <input
+                  type="search"
+                  autoFocus
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Escape" && closeSearch()}
+                  placeholder="Search this menu…"
+                  className="animate-pop-in h-10 w-full rounded-full border bg-card pr-3 pl-10 shadow-card outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/80 [&::-webkit-search-cancel-button]:hidden"
+                />
+              </label>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setSearchOpen(true)}
+                aria-label="Search this menu"
+                className="flex size-10 shrink-0 items-center justify-center rounded-full border bg-card text-primary shadow-card outline-none hover:border-ring/50 focus-visible:ring-3 focus-visible:ring-ring/80"
+              >
+                <Search className="size-4.5" />
+              </button>
+            )}
+
+            {searchOpen && (
+              <button
+                type="button"
+                onClick={closeSearch}
+                aria-label="Close search"
+                className="flex size-10 shrink-0 items-center justify-center rounded-full border bg-card shadow-card outline-none hover:border-ring/50 focus-visible:ring-3 focus-visible:ring-ring/80"
+              >
+                <X className="size-4.5" />
+              </button>
+            )}
+
+            {!searchOpen && (sections.length > 1 || showDiet) && (
+              <nav aria-label="Menu filters" className="-mr-6 min-w-0 flex-1">
+                <ul className="flex gap-2 overflow-x-auto pr-6 [scrollbar-width:none]">
+                  {showDiet && (
+                    <>
+                      <li className="shrink-0">
+                        <DietToggle kind="veg" active={diet === "veg"} onToggle={() => setDiet((d) => (d === "veg" ? "all" : "veg"))} />
+                      </li>
+                      <li className="shrink-0">
+                        <DietToggle
+                          kind="nonveg"
+                          active={diet === "nonveg"}
+                          onToggle={() => setDiet((d) => (d === "nonveg" ? "all" : "nonveg"))}
+                        />
+                      </li>
+                      {sections.length > 1 && <li aria-hidden="true" className="my-2 w-px shrink-0 bg-border" />}
+                    </>
+                  )}
+                  {sections.length > 1 && chips.map((chip) => {
+                    const Icon = chip.key === ALL ? AllCategoriesIcon : getCuisineIcon(chip.name);
+                    return (
+                      <li key={chip.key} className="shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setFilter(chip.key)}
+                          aria-pressed={filter === chip.key}
+                          className={cn(
+                            "flex h-10 items-center gap-1.5 rounded-full border px-4 text-sm font-semibold whitespace-nowrap outline-none transition-[background-color,color,border-color,box-shadow] duration-(--dur-base) focus-visible:ring-3 focus-visible:ring-ring/80",
+                            filter === chip.key
+                              ? "border-transparent surface-ink bg-ink text-ink-foreground shadow-raised"
+                              : "bg-card text-foreground shadow-card hover:border-ring/50",
+                          )}
+                        >
+                          <Icon className="size-4" aria-hidden="true" />
+                          {chip.name}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </nav>
+            )}
+          </div>
+        </div>
+      )}
+
+      {sections.length === 0 && (
+        <EmptyState compact icon={UtensilsCrossed} title="Nothing on the menu yet">
+          Check back soon.
+        </EmptyState>
+      )}
+
+      {sections.length > 0 && visible.length === 0 && (
+        <EmptyState
+          compact
+          icon={q ? SearchX : diet === "veg" ? Leaf : Drumstick}
+          title={q ? `No dishes match “${query.trim()}”` : `No ${diet === "veg" ? "veg" : "non-veg"} dishes here`}
+        >
+          {q ? "Try a different search." : `Try another category, or switch ${diet === "veg" ? "Veg" : "Non-veg"} off.`}
+        </EmptyState>
+      )}
+
+      {visible.map((section) => (
+        <section key={sectionKey(section)} aria-labelledby={`sec-${sectionKey(section)}`} className="pt-7">
+          <SectionHeading
+            id={`sec-${sectionKey(section)}`}
+            name={sectionName(section)}
+            count={menuItems(section).length}
+            icon={getCuisineIcon(sectionName(section))}
+          />
+          {(() => {
+            const items = menuItems(section);
+            // Photo dishes in the grid; dishes without a photo as a list under it.
+            const card = (item: MenuItem) => {
+              if (item.kind === "portions") {
+                const ids = item.portions.map((p) => p.dish.id);
+                const open = () => setPortionPick({ base: item.base, portions: item.portions });
+                return (
+                  <DishCard
+                    key={ids[0]}
+                    dish={item.portions[0].dish}
+                    restaurantName={restaurant.name}
+                    quantity={ids.reduce((sum, id) => sum + quantityOf(id), 0)}
+                    orderable={restaurant.is_active && orderingEnabled}
+                    pausedOnly={restaurant.is_active && !orderingEnabled}
+                    pausedLabel={closedChip}
+                    isFavorite={favoriteDishId !== null && ids.includes(favoriteDishId)}
+                    isHighlyReordered={ids.some((id) => highlyReorderedDishIds.has(id))}
+                    highlighted={highlighted !== null && ids.includes(highlighted)}
+                    liked={ids.some((id) => likedDishIds.includes(id))}
+                    portions={item.portions}
+                    onChoosePortion={open}
+                    onAdd={open}
+                    onChangeQuantity={open}
+                  />
+                );
+              }
+              const { dish } = item;
+              return (
+                <DishCard
+                  key={dish.id}
+                  dish={dish}
+                  restaurantName={restaurant.name}
+                  quantity={quantityOf(dish.id)}
+                  orderable={restaurant.is_active && orderingEnabled}
+                  pausedOnly={restaurant.is_active && !orderingEnabled}
+                  pausedLabel={closedChip}
+                  isFavorite={dish.id === favoriteDishId}
+                  isHighlyReordered={highlyReorderedDishIds.has(dish.id)}
+                  highlighted={highlighted === dish.id}
+                  liked={likedDishIds.includes(dish.id)}
+                  hasAddons={section.addons.length > 0}
+                  onAdd={() => handleAdd(dish, section.addons)}
+                  onChangeQuantity={(q) => setQuantity(dish.id, q)}
+                />
+              );
+            };
+            const hasPhoto = (item: MenuItem) =>
+              (item.kind === "dish" ? [item.dish] : item.portions.map((p) => p.dish)).some((d) =>
+                getDishPhoto(restaurant.name, d.name),
+              );
+            const withPhoto = items.filter(hasPhoto);
+            const withoutPhoto = items.filter((item) => !hasPhoto(item));
+            return (
+              <>
+                {withPhoto.length > 0 && (
+                  <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-6">{withPhoto.map(card)}</div>
+                )}
+                {withoutPhoto.length > 0 && (
+                  <div className="mt-4 divide-y rounded-3xl border bg-card shadow-card">{withoutPhoto.map(card)}</div>
+                )}
+              </>
+            );
+          })()}
+        </section>
+      ))}
+
+      <div className="h-8" aria-hidden="true" />
+
+      <CartBar
+        profilePhone={profilePhone}
+        currentRestaurantId={restaurant.id}
+        orderingEnabled={orderingEnabled}
+        closedNote={closedNote}
+        spiceLevel={spiceLevel}
+        offers={offers}
+      />
+
+      <PortionSheet
+        pick={portionPick}
+        restaurantName={restaurant.name}
+        quantityOf={quantityOf}
+        onAdd={(dish) => commitAdd(dish)}
+        onChangeQuantity={(dishId, quantity) => setQuantity(dishId, quantity)}
+        onClose={() => setPortionPick(null)}
+      />
+
+      <AddonSheet
+        dish={addonTarget?.dish ?? null}
+        addons={addonTarget?.addons ?? []}
+        onClose={() => setAddonTarget(null)}
+        onAdd={(dish, chosen, quantity) => {
+          setAddonTarget(null);
+          commitAdd(dish, chosen, quantity);
+        }}
+      />
+
+      <AlertDialog open={pendingAdd !== null} onOpenChange={(open) => !open && setPendingAdd(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg font-bold">Start a new cart?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your cart has items from {cart.restaurantName}. Each order is from one restaurant, so
+              adding this will clear that cart.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep my cart</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (pendingAdd)
+                  addToCart(cartRestaurant, pendingAdd.dish, {
+                    addons: pendingAdd.addons,
+                    quantity: pendingAdd.quantity,
+                  });
+                setPendingAdd(null);
+              }}
+            >
+              Start new cart
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}
+
+type Diet = "all" | "veg" | "nonveg";
+
+/**
+ * A menu section's heading: its food icon on a blush tile, the name, and a
+ * count pill. The icon is picked by the caller and passed in — the React
+ * compiler lint rejects choosing a component during render.
+ */
+function SectionHeading({ id, name, count, icon: Icon }: { id: string; name: string; count: number; icon: LucideIcon }) {
+  return (
+    <h2 id={id} className="flex items-center gap-2.5">
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand-soft-foreground">
+        <Icon className="size-5" aria-hidden="true" />
+      </span>
+      <span className="min-w-0 font-heading text-title font-bold">{name}</span>
+      <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-muted-foreground tabular-nums">
+        {count}
+      </span>
+    </h2>
+  );
+}
+
+/** One half of the Veg / Non-veg filter — tap again to show everything. */
+function DietToggle({ kind, active, onToggle }: { kind: "veg" | "nonveg"; active: boolean; onToggle: () => void }) {
+  const veg = kind === "veg";
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={active}
+      aria-label={veg ? "Veg only" : "Non-veg only"}
+      className={cn(
+        "flex h-10 items-center gap-1.5 rounded-full border px-3 text-sm font-semibold whitespace-nowrap outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/80",
+        !active && "bg-card text-foreground shadow-card hover:border-ring/50",
+        active && veg && "border-success bg-success-soft text-success",
+        active && !veg && "border-destructive bg-destructive/10 text-destructive",
+      )}
+    >
+      <VegMark isVeg={veg} className="size-4" />
+      {veg ? "Veg" : "Non-veg"}
+    </button>
+  );
+}

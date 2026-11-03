@@ -1,0 +1,1413 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Brand ramps — fixed values, identical in light and dark. Five steps per
+ * role (100 lightest -> 900 darkest); the 500 of pine/rose/amber is the
+ * approved brand swatch itself. Components should normally reach for the
+ * semantic tokens further down (bg-primary, text-rose, bg-card, …), which
+ * DO flip per theme; the raw ramps are for one-off decorative work where a
+ * specific, theme-independent shade is the point (illustrations, photo
+ * scrims, confetti).
+ */
+@theme {
+  --color-pine-100: #e3eadb;
+  --color-pine-300: #5e9378;
+  --color-pine-500: #0f3b2a;
+  --color-pine-700: #14301f;
+  --color-pine-900: #08150f;
+
+  --color-rose-100: #f1eccb;
+  --color-rose-300: #b6d2bd;
+  --color-rose-500: #2f7a55;
+  --color-rose-700: #5e4a10;
+  --color-rose-900: #2a2408;
+
+  --color-amber-100: #f4ead0;
+  --color-amber-300: #d9bf6a;
+  --color-amber-500: #d4a537;
+  --color-amber-700: #7f5c0e;
+  --color-amber-900: #5e4710;
+
+  --color-ivory-100: #fffef9;
+  --color-ivory-300: #f8f3e4;
+  --color-ivory-500: #efe9d3;
+  --color-ivory-700: #ddd5b8;
+  --color-ivory-900: #bdb592;
+
+  --color-forest-100: #e3efe7;
+  --color-forest-300: #8cc3a6;
+  --color-forest-500: #2f6b4f;
+  --color-forest-700: #22503a;
+  --color-forest-900: #14301f;
+
+  --color-brick-100: #fbe3df;
+  --color-brick-300: #f08271;
+  --color-brick-500: #b42b1c;
+  --color-brick-700: #8e2416;
+  --color-brick-900: #561409;
+}
+
+/*
+ * Type scale — the named steps for display text (Fraunces via font-heading).
+ * Body copy keeps Tailwind's text-sm/text-base; everything bigger than a
+ * card title should come from here rather than one-off text-[2.5rem]s.
+ *   display   login / welcome hero
+ *   headline  page titles (Your orders, restaurant name, cart)
+ *   title     card and section titles
+ *   label     small caption above a field or section — sentence case,
+ *             sans, no letter-spacing. Replaces the old mono-uppercase
+ *             eyebrows, which made screens read like developer tooling.
+ */
+/*
+ * Motion tokens. Three curves and four durations cover every animation in
+ * the app; reach for these instead of hand-typing cubic-beziers.
+ *   ease-out-expo  things arriving (sheets, toasts, content sliding in)
+ *   ease-spring    small confirmations that should feel springy (add to
+ *                  cart, count bumps) — overshoots slightly, keep it short
+ *   ease-in-quad   things leaving
+ * Durations: press 120ms · quick 180ms · base 240ms · slow 400ms. The
+ * ease-* ones also generate Tailwind utilities (ease-out-expo, …).
+ */
+@theme {
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in-quad: cubic-bezier(0.55, 0.085, 0.68, 0.53);
+}
+
+:root {
+  --dur-press: 120ms;
+  --dur-quick: 180ms;
+  --dur-base: 240ms;
+  --dur-slow: 400ms;
+}
+
+@theme {
+  /* Fluid: 34px on a 320px phone (so a short headline stays one line), up
+     to 42px from ~410px wide. */
+  --text-display: clamp(2.125rem, 11vw - 0.2rem, 2.625rem);
+  --text-display--line-height: 1.04;
+  --text-display--letter-spacing: -0.025em;
+  --text-headline: 1.875rem;
+  --text-headline--line-height: 1.1;
+  --text-headline--letter-spacing: -0.02em;
+  --text-title: 1.4375rem;
+  --text-title--line-height: 1.2;
+  --text-title--letter-spacing: -0.01em;
+  --text-label: 0.8125rem;
+  --text-label--line-height: 1.125rem;
+  --text-label--font-weight: 600;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--app-sans);
+  --font-heading: var(--app-heading);
+  --font-display: var(--app-display);
+  --color-ink: var(--ink);
+  --color-slider: var(--slider);
+  --color-slider-foreground: var(--slider-foreground);
+  --color-ink-foreground: var(--ink-foreground);
+  --color-ink-accent: var(--ink-accent);
+  --color-ink-success: var(--ink-success);
+  --color-ink-danger: var(--ink-danger);
+  --color-hero: var(--hero);
+  --color-hero-foreground: var(--hero-foreground);
+  --color-hero-accent: var(--hero-accent);
+  --color-hero-success: var(--hero-success);
+  --color-hero-danger: var(--hero-danger);
+  --color-scrim: var(--scrim);
+  --color-knob-ink: var(--knob-ink);
+  --color-amber-soft: var(--amber-soft);
+  --color-amber-soft-foreground: var(--amber-soft-foreground);
+  --color-pine-soft: var(--pine-soft);
+  --color-pine-soft-foreground: var(--pine-soft-foreground);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-soft-foreground: var(--brand-soft-foreground);
+  --color-rose: var(--rose);
+  --color-rose-foreground: var(--rose-foreground);
+  --color-amber: var(--amber);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-soft: var(--success-soft);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --shadow-card: var(--elevation-card);
+  --shadow-raised: var(--elevation-raised);
+  --shadow-overlay: var(--elevation-overlay);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* The FoodHub palette: forest green ink and hero surfaces, gold actions and
+ * accents, on a cream ground. Run `npm run audit:contrast` after changing it. */
+:root,
+[data-palette="pine"] {
+  --background: #f8f3e4;
+  --foreground: #14301f;
+  --card: #fffdf6;
+  --card-foreground: #14301f;
+  --popover: #fffef9;
+  --popover-foreground: #14301f;
+  --primary: #7f5c0e;
+  --primary-foreground: #ffffff;
+  --secondary: #efe9d3;
+  --secondary-foreground: #14301f;
+  --muted: #efe9d3;
+  --muted-foreground: #4f6256;
+  --accent: #efe9d3;
+  --accent-foreground: #14301f;
+  --destructive: #b42b1c;
+  --destructive-foreground: #ffffff;
+  --border: #ddd5b8;
+  /* 3.5:1 against card — WCAG 1.4.11 wants 3:1 for a control's boundary. */
+  --input: #8a8566;
+  --ring: #2f7a55;
+  --ink: #0f3b2a;
+  --ink-foreground: #fffaea;
+  /* Selected chips (surface-ink): lit pine, a soft shine over pine → berry. */
+  --ink-2: #1d5a40;
+  --ink-surface: linear-gradient(180deg, rgb(255 255 255 / 14%), transparent 55%),
+    linear-gradient(115deg, var(--ink) 0%, var(--ink-2) 100%);
+  /* Accents that sit ON the ink surface (token card, cart bar, banners).
+     The normal amber/forest/brick are ~2:1 on pine, so ink surfaces get
+     their own tints — checked >=4.8:1 against the lighter top of the
+     surface-ink gradient, not just flat --ink. */
+  --ink-accent: #f0cf7a;
+  --ink-success: #a6d9bd;
+  --ink-danger: #f6ada1;
+
+  /* Hero — the lit pine surface (surface-hero): ticket, Today card, cart
+     bar, member card, banners, celebration, 404. Identical in BOTH themes
+     (unlike --ink, which flips to lavender at night so selected chips stay
+     legible): a lighter pine lit from the top-left, a warm amber light in
+     the top-right corner (--hero-glow), a rose bloom bottom-left, deep pine
+     at the far edge. Text is ivory; secondary lines go no fainter than /85.
+     The audit checks text over every stop, including amber light over the
+     lightest pine. */
+  --hero: #0f3b2a;
+  --hero-a: #17503a;
+  --hero-b: #11442f;
+  --hero-c: #0a2a1d;
+  --hero-glow: rgb(228 190 90 / 13%);
+  --hero-bloom: rgb(30 120 80 / 52%);
+  --hero-foreground: #fffaea;
+  --hero-accent: #f3da8f;
+  --hero-success: #bfe8d1;
+  --hero-danger: #ffe9e4;
+
+  /* Light: soft glows (glow-amber / -rose / -hero) and the sky over the top
+     of every page (body, --page-glow-*) so no screen sits on a flat ground. */
+  --glow-amber: rgb(212 165 55 / 42%);
+  --glow-rose: rgb(154 116 22 / 34%);
+  --slider: #0f3b2a;
+  --slider-2: #2f7a55;
+  --slider-foreground: #fffaea;
+  --slider-surface: linear-gradient(180deg, rgb(255 255 255 / 16%), transparent 52%),
+    linear-gradient(115deg, var(--slider) 0%, var(--slider-2) 100%);
+  --glow-slider: rgb(154 116 22 / 45%);
+  --glow-hero: rgb(15 59 42 / 42%);
+  --page-glow-a: rgb(230 200 110 / 12%);
+  --page-glow-b: rgb(180 215 190 / 20%);
+
+  /* Status chips (statusBadge): Placed amber, Confirmed lavender, Out for
+     delivery blush (brand-soft), Delivered green, Cancelled red. */
+  --amber-soft: #f4ead0;
+  --amber-soft-foreground: #5e4710;
+  --pine-soft: #e3eadb;
+  --pine-soft-foreground: #0f3b2a;
+
+  --brand-soft: #f1eccb;
+  --brand-soft-foreground: #5e4a10;
+  --rose: #2f7a55;
+  --rose-foreground: #ffffff;
+  --amber: #d4a537;
+  --success: #2f6b4f;
+  --success-foreground: #ffffff;
+  --success-soft: #e3efe7;
+  --stripe-a: #ebe3c6;
+  --stripe-b: #f4efdc;
+  --chart-1: #0f3b2a;
+  --chart-2: #2f7a55;
+  --chart-3: #d4a537;
+  --chart-4: #2f6b4f;
+  --chart-5: #b6d2bd;
+  --radius: 0.875rem;
+  --sidebar: #f8f3e4;
+  --sidebar-foreground: #14301f;
+  --sidebar-primary: #7f5c0e;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #efe9d3;
+  --sidebar-accent-foreground: #14301f;
+  --sidebar-border: #ddd5b8;
+  --sidebar-ring: #7f5c0e;
+
+  /* Elevation — pine-tinted in light mode so shadows read as part of the
+     palette rather than grey smudges on ivory. */
+  --elevation-card: 0 1px 2px rgb(15 59 42 / 6%), 0 8px 22px -10px rgb(212 165 55 / 22%);
+  --elevation-raised: 0 2px 4px rgb(15 59 42 / 6%), 0 16px 32px -12px rgb(154 116 22 / 24%);
+  --elevation-overlay: 0 4px 8px rgb(15 59 42 / 8%), 0 24px 48px -12px rgb(15 59 42 / 28%);
+
+  /* Home header ambient field, three stops per time of day — see
+     .mood-field below and HomeHeader. Alpha is baked into each stop so the
+     field reads clearly on ivory while the pine heading on top of its
+     densest point stays above 7:1. */
+  /* Palette pieces: the brand gradient
+     (food ring, progress bars, milestone rings), dialog backdrops, the
+     switch knob's icon, the promo's warm light, confetti. */
+  --brand-1: #0f3b2a;
+  --brand-2: #2f7a55;
+  --brand-3: #d4a537;
+  --scrim: #08150f;
+  --knob-ink: #0f3b2a;
+  --promo-light: rgb(240 205 120 / 45%);
+  --confetti-1: #d4a537;
+  --confetti-2: #2f7a55;
+  --confetti-3: #b6d2bd;
+  --confetti-4: #2f6b4f;
+  --confetti-5: #0f3b2a;
+  --show-pine: block;
+  --app-sans: var(--font-jakarta);
+  --app-heading: var(--font-fraunces), var(--font-jakarta);
+  /* Section / page headings (font-display): Cormorant Garamond, the free
+     stand-in for Del Rose. */
+  --app-display: var(--font-cormorant), var(--font-fraunces), serif;
+  --primary-2: #6e5410;
+  --surface-primary: linear-gradient(180deg, rgb(255 255 255 / 18%), transparent 50%),
+    linear-gradient(115deg, var(--primary) 0%, var(--primary-2) 100%);
+  --hero-surface: radial-gradient(60% 45% at 18% 0%, rgb(255 255 255 / 9%), transparent 70%),
+    radial-gradient(90% 80% at 100% 0%, var(--hero-glow), transparent 65%),
+    radial-gradient(70% 60% at 0% 100%, var(--hero-bloom), transparent 70%),
+    linear-gradient(150deg, var(--hero-a) 0%, var(--hero-b) 55%, var(--hero-c) 100%);
+  /* Home's headline gradient (text-heading): pine → rose → amber, the
+     brand's three colours. */
+  --heading-a: #14301f;
+  --heading-b: #1d5a40;
+  --heading-c: #6b5210;
+
+  --mood-morning-a: #f0cf7acc;
+  --mood-morning-b: #f1eccb;
+  --mood-morning-c: #d9bf6a66;
+  --mood-afternoon-a: #d9bf6aaa;
+  --mood-afternoon-b: #f4ead0;
+  --mood-afternoon-c: #f0cf7a88;
+  --mood-evening-a: #b6d2bdcc;
+  --mood-evening-b: #f1eccb;
+  --mood-evening-c: #d9bf6a55;
+  --mood-night-a: #5e937899;
+  --mood-night-b: #b6d2bdcc;
+  --mood-night-c: #e3eadb;
+}
+
+/* Dark: pine-tinted grounds (not neutral grey) so the brand survives at
+   night. Fills that carry text (success/destructive/primary) get a dark
+   *-foreground instead of white — the dark-mode fills are light enough
+   that white text on them would fail. */
+.dark,
+.dark [data-palette="pine"] {
+  --background: #08150f;
+  --foreground: #f2efdc;
+  --card: #10241a;
+  --card-foreground: #f2efdc;
+  --popover: #17301f;
+  --popover-foreground: #f2efdc;
+  --primary: #e0b64a;
+  --primary-foreground: #1c1404;
+  --secondary: #15291e;
+  --secondary-foreground: #f2efdc;
+  --muted: #15291e;
+  --muted-foreground: #a3b8a8;
+  --accent: #15291e;
+  --accent-foreground: #f2efdc;
+  --destructive: #f08271;
+  --destructive-foreground: #2a0e09;
+  --border: rgb(240 238 220 / 11%);
+  --input: rgb(240 238 220 / 40%);
+  --ring: #e0c46c;
+  --ink: #f0dc9a;
+  --ink-foreground: #0f2a1c;
+  --ink-2: #e0c46c;
+  --ink-accent: #5a4410;
+  --ink-success: #22503a;
+  --ink-danger: #8e2416;
+  --glow-amber: rgb(224 182 74 / 34%);
+  --glow-rose: rgb(224 196 108 / 22%);
+  --slider: #f0dc9a;
+  --slider-2: #e0c46c;
+  --slider-foreground: #0f2a1c;
+  --glow-slider: rgb(224 196 108 / 34%);
+  --glow-hero: rgb(30 110 75 / 40%);
+  --page-glow-a: rgb(224 182 74 / 11%);
+  --page-glow-b: rgb(30 110 75 / 20%);
+  --amber-soft: #2e2a0f;
+  --amber-soft-foreground: #f0d98a;
+  --pine-soft: #173026;
+  --pine-soft-foreground: #dfeadc;
+  --brand-soft: #1b3326;
+  --brand-soft-foreground: #dfe9c0;
+  --rose: #e0c46c;
+  --rose-foreground: #0f2a1c;
+  --amber: #e0b64a;
+  --success: #7cc4a0;
+  --success-foreground: #0f2419;
+  --success-soft: #15271e;
+  --stripe-a: #0d1f16;
+  --stripe-b: #0d1f16;
+  --chart-1: #dfeadc;
+  --chart-2: #e0c46c;
+  --chart-3: #e0b64a;
+  --chart-4: #7cc4a0;
+  --chart-5: #5e9378;
+  --sidebar: #0d1f16;
+  --sidebar-foreground: #f2efdc;
+  --sidebar-primary: #e0b64a;
+  --sidebar-primary-foreground: #1c1404;
+  --sidebar-accent: #15291e;
+  --sidebar-accent-foreground: #f2efdc;
+  --sidebar-border: rgb(240 238 220 / 11%);
+  --sidebar-ring: #e0b64a;
+
+  /* Dark cards carry a 1px rim light on their top edge, so they read as
+     lit objects rather than holes in the ground. */
+  --elevation-card: inset 0 1px 0 rgb(255 255 255 / 6%), 0 1px 2px rgb(0 0 0 / 35%), 0 10px 26px -12px rgb(0 0 0 / 55%);
+  --elevation-raised: inset 0 1px 0 rgb(255 255 255 / 7%), 0 2px 4px rgb(0 0 0 / 30%), 0 16px 32px -12px rgb(0 0 0 / 60%);
+  --elevation-overlay: 0 4px 8px rgb(0 0 0 / 35%), 0 24px 48px -12px rgb(0 0 0 / 60%);
+
+  --primary-2: #cfa73c;
+  --heading-a: #f2efdc;
+  --heading-b: #cfe3c8;
+  --heading-c: #e8c46a;
+
+  --mood-morning-a: #b8943a66;
+  --mood-morning-b: #2f7a5555;
+  --mood-morning-c: #5e471088;
+  --mood-afternoon-a: #e0b64a55;
+  --mood-afternoon-b: #5e471099;
+  --mood-afternoon-c: #2f7a5544;
+  --mood-evening-a: #2f7a5599;
+  --mood-evening-b: #0f3b2acc;
+  --mood-evening-c: #b8943a44;
+  --mood-night-a: #0f3b2a;
+  --mood-night-b: #0f4a38cc;
+  --mood-night-c: #2f7a5555;
+}
+
+/*
+ * Home header's time-of-day ambient field: a top-down wash of the mood's
+ * middle colour, a broad light source from the top-left and a second one
+ * low and to the right, all fading out downward into the ground, so the header has an atmosphere instead of a hard band. On
+ * screens wider than the app column the sides fade too, so the field
+ * never ends in a visible vertical edge.
+ */
+.mood-field {
+  background:
+    radial-gradient(95% 110% at 0% 0%, var(--mood-a), transparent 70%),
+    radial-gradient(110% 70% at 70% 80%, var(--mood-c), transparent 70%),
+    linear-gradient(var(--mood-b), transparent);
+  mask-image: linear-gradient(to bottom, #000 45%, transparent);
+}
+@media (min-width: 28rem) {
+  .mood-field {
+    mask-image:
+      linear-gradient(to bottom, #000 45%, transparent),
+      linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+    mask-composite: intersect;
+  }
+}
+.mood-morning {
+  --mood-a: var(--mood-morning-a);
+  --mood-b: var(--mood-morning-b);
+  --mood-c: var(--mood-morning-c);
+}
+.mood-afternoon {
+  --mood-a: var(--mood-afternoon-a);
+  --mood-b: var(--mood-afternoon-b);
+  --mood-c: var(--mood-afternoon-c);
+}
+.mood-evening {
+  --mood-a: var(--mood-evening-a);
+  --mood-b: var(--mood-evening-b);
+  --mood-c: var(--mood-evening-c);
+}
+.mood-night {
+  --mood-a: var(--mood-night-a);
+  --mood-b: var(--mood-night-b);
+  --mood-c: var(--mood-night-c);
+}
+
+/* Striped stand-in for photos we don't have yet (matches the design refs). */
+@utility bg-stripes {
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--stripe-a) 0 14px,
+    var(--stripe-b) 14px 28px
+  );
+}
+
+/*
+ * Tasteful gradient depth for the app's headline ink/primary surfaces — the
+ * cart bar, primary CTAs (Continue with Google, Place order, View cart),
+ * and hero-style cards (the order-tracking token card). Layered as a
+ * background-image over the element's existing flat background-color, so
+ * it stays a graceful flat fallback wherever color-mix() isn't supported,
+ * and deliberately subtle (a soft light source, not gloss) so the app's
+ * clean flat look holds everywhere this ISN'T applied.
+ */
+@utility surface-primary {
+  background-image: var(--surface-primary);
+}
+/* Sliders (lit switches, the tab bar pill): pair with bg-slider. */
+@utility surface-slider {
+  background-image: var(--slider-surface);
+}
+
+@utility surface-ink {
+  background-image: var(--ink-surface);
+}
+
+/* The lit pine hero (tokens --hero-* above). Layered over bg-hero, which
+   stays as the flat fallback. */
+@utility surface-hero {
+  background-image: var(--hero-surface);
+}
+@utility text-heading {
+  background-image: linear-gradient(100deg, var(--heading-a) 0%, var(--heading-b) 50%, var(--heading-c) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  @media (forced-colors: active) {
+    background-image: none;
+    color: CanvasText;
+  }
+}
+.script-name {
+  font-size: 1.15em;
+  font-weight: 400;
+  line-height: 1.15;
+}
+.script-word {
+  position: relative;
+  display: inline-block;
+  padding-inline: 0.04em 0.12em;
+}
+.script-sizer {
+  display: inline-block;
+}
+.script-baseline {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  vertical-align: baseline;
+}
+.script-svg {
+  position: absolute;
+  top: 0;
+  left: 0.04em;
+  overflow: visible;
+  visibility: hidden;
+  pointer-events: none;
+}
+.script-text {
+  font: inherit;
+  fill: var(--script-ink);
+  stroke: var(--script-ink);
+  stroke-width: 0.6px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.script-stop-a { stop-color: var(--heading-a); }
+.script-stop-b { stop-color: var(--heading-b); }
+.script-stop-c { stop-color: var(--heading-c); }
+.script-name[data-tone="hero"] :is(.script-stop-a, .script-stop-b, .script-stop-c) {
+  stop-color: var(--hero-foreground);
+}
+.script-name:is([data-phase="write"], [data-phase="erase"]) .script-sizer {
+  visibility: hidden;
+}
+.script-name:is([data-phase="write"], [data-phase="erase"]) .script-svg {
+  visibility: visible;
+}
+/* A Telugu word: a window that clips its own ink while it wipes in. The
+   padding gives the tall vowel signs and conjuncts room (no clipping),
+   the negative margin keeps the line where it was. */
+.script-te {
+  /* inline-flex, not inline-block: a clipped inline-block takes its
+     baseline from its bottom edge, which lifted the word off the line. */
+  display: inline-flex;
+  overflow: hidden;
+  padding: 0.18em 0.08em 0.28em;
+  margin: -0.18em -0.08em -0.28em;
+  vertical-align: baseline;
+}
+.script-te-ink {
+  display: inline-block;
+  color: var(--heading-b);
+}
+.script-name[data-tone="hero"] .script-te-ink {
+  color: var(--hero-foreground);
+}
+
+/*
+ * Lighting kit. Blooms are coloured light under a surface, not grey
+ * smudges: glow-amber for the main action, glow-hero for hero surfaces,
+ * glow-rose for a highlighted card. One bloom per screen region — the main
+ * action or the hero; everything else gets shadow-card. The neutral layer
+ * is fixed black (not var(--ink), which flips at night): a shadow should
+ * always read as occlusion.
+ */
+@utility glow-amber {
+  box-shadow:
+    0 2px 6px -2px rgb(0 0 0 / 22%),
+    0 14px 30px -12px var(--glow-amber);
+}
+@utility glow-slider {
+  box-shadow:
+    0 2px 6px -2px rgb(0 0 0 / 22%),
+    0 14px 30px -12px var(--glow-slider);
+}
+@utility glow-rose {
+  box-shadow:
+    0 2px 6px -2px rgb(0 0 0 / 18%),
+    0 12px 28px -12px var(--glow-rose);
+}
+@utility glow-hero {
+  box-shadow:
+    0 6px 14px -6px rgb(0 0 0 / 40%),
+    0 22px 44px -18px var(--glow-hero),
+    0 12px 28px -16px var(--glow-amber);
+}
+/* Kept for existing callers: the hero bloom. */
+@utility shadow-elevated-glow {
+  box-shadow:
+    0 6px 14px -6px rgb(0 0 0 / 40%),
+    0 22px 44px -18px var(--glow-hero),
+    0 12px 28px -16px var(--glow-amber);
+}
+/* The top edge of a surface catching the light (for surfaces that don't
+   use shadow-card: chips, sheets, the tab bar). */
+/* The turning ring around a chosen "What's on your mind?" tile: the brand's
+   pine, rose and amber chasing each other (animate-ring-spin). */
+@utility food-ring {
+  background: conic-gradient(var(--brand-1), var(--brand-2), var(--brand-3), var(--brand-2), var(--brand-1));
+}
+@utility only-pine {
+  display: var(--show-pine);
+}
+/* Pine's pass steam only shows while the lid is up (its animation). */
+.pass-steam {
+  opacity: 0;
+}
+
+@utility rim-light {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 9%);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/80;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* The sky over every page: two soft lights above the top edge (amber
+       and rose) that fade out within the first screen, so no page sits on
+       a flat, unlit ground. */
+    background-image:
+      radial-gradient(70rem 30rem at 110% -12rem, var(--page-glow-a), transparent 70%),
+      radial-gradient(56rem 26rem at -20% -10rem, var(--page-glow-b), transparent 70%);
+    background-repeat: no-repeat;
+  }
+  html {
+    @apply font-sans;
+  }
+  /* Fraunces at SOFT 50: rounded, friendly terminals instead of the sharp
+     bookish default. Numbers in the display face (prices, tokens, totals)
+     use lining figures, not the old-style ones Fraunces can fall into. */
+  .font-heading {
+    font-variation-settings: "SOFT" 50;
+    font-variant-numeric: lining-nums;
+  }
+}
+
+/*
+ * Small CSS-only motion moments (add-to-cart morph, cart bar entrance,
+ * count bounce). Kept inside `no-preference` so anyone with "reduce
+ * motion" set gets the plain, instant state change instead — no
+ * transform/opacity animation at all, never just a faster one.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  /* ScriptName: per letter (--i), the pen traces the glyph's outline
+     (stroke-dashoffset), then the ink floods in; erasing lifts it off. */
+  .script-name[data-phase="write"] .script-letter {
+    stroke-dasharray: 420;
+    stroke-dashoffset: 420;
+    fill-opacity: 0;
+    animation:
+      script-trace 520ms cubic-bezier(0.4, 0, 0.3, 1) calc(var(--i) * 170ms) forwards,
+      script-ink 260ms ease-out calc(var(--i) * 170ms + 420ms) forwards;
+  }
+  .script-name[data-phase="erase"] .script-svg {
+    animation: script-erase 500ms var(--ease-in-quad) both;
+  }
+  /* Telugu (plain HTML text, see TeluguWord): each word wipes in left to
+     right — the window slides in while the ink inside slides back. */
+  .script-name[data-phase="write"] .script-te {
+    animation: script-te-window 760ms var(--ease-out-expo) calc(var(--i) * 420ms) both;
+  }
+  .script-name[data-phase="write"] .script-te-ink {
+    animation: script-te-ink 760ms var(--ease-out-expo) calc(var(--i) * 420ms) both;
+  }
+  .script-name[data-phase="erase"] .script-te {
+    animation: script-erase 500ms var(--ease-in-quad) both;
+  }
+  @keyframes script-te-window {
+    from {
+      transform: translateX(-101%);
+    }
+  }
+  @keyframes script-te-ink {
+    from {
+      transform: translateX(101%);
+      opacity: 0.2;
+    }
+  }
+  @keyframes script-trace {
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes script-ink {
+    to { fill-opacity: 1; }
+  }
+  @keyframes script-erase {
+    to { opacity: 0; filter: blur(3px); translate: 0 -0.12em; }
+  }
+  /* Home logo: a slow glow in the action colour
+     breathes around the tile, and two rings ripple out once when the page
+     appears — paused under the splash, so they play as it hands over. The
+     glow is a drop-shadow filter, not box-shadow, so the tile's ring and
+     shadow stay put. */
+  .logo-beacon {
+    animation: logo-glow 3.2s ease-in-out infinite;
+  }
+  .logo-beacon::before,
+  .logo-beacon::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 2px solid var(--primary);
+    opacity: 0;
+    pointer-events: none;
+    animation: logo-ripple 1.6s var(--ease-out-expo) 0.4s 1 both;
+  }
+  .logo-beacon::after {
+    animation-delay: 0.85s;
+  }
+  html:is([data-splash="play"], [data-splash="run"]) .logo-beacon,
+  html:is([data-splash="play"], [data-splash="run"]) .logo-beacon::before,
+  html:is([data-splash="play"], [data-splash="run"]) .logo-beacon::after {
+    animation-play-state: paused;
+  }
+  .animate-pop-in {
+    animation: pop-in var(--dur-quick) var(--ease-spring) both;
+  }
+  /* Bottom bar: the lit pill squashes as it lands on a tab, and the new
+     tab's icon pops in with a little twist. */
+  /* The order road (DeliveryRoad): the rider bobs while it rides… */
+  .animate-scooter {
+    animation: scooter-bob 0.9s ease-in-out infinite alternate;
+  }
+  /* …the cooking pot simmers with a little hop now and then… */
+  .animate-cook {
+    animation: cook-jiggle 1.6s ease-in-out infinite;
+    transform-origin: 50% 90%;
+  }
+  /* …and its steam: each wisp rises and fades, a beat apart. */
+  .cook-steam {
+    animation: cook-steam 1.8s ease-out infinite;
+  }
+  .cook-steam:nth-child(2) {
+    animation-delay: -0.6s;
+  }
+  .cook-steam:nth-child(3) {
+    animation-delay: -1.2s;
+  }
+  /* Unlocked milestone badges: a band of light sweeps across now and then,
+     like a medal catching the light. The element needs overflow: hidden. */
+  .animate-shine {
+    position: relative;
+  }
+  .animate-shine::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 30%, rgb(255 255 255 / 45%) 50%, transparent 70%);
+    translate: -110% 0;
+    animation: shine-sweep 5.5s var(--ease-out-expo) 1s infinite;
+    pointer-events: none;
+  }
+  .motif-steam {
+    animation: motif-steam 3.2s ease-in-out infinite;
+  }
+  /* FoodHub Pine's motif: the sparkles beside the cloche twinkle. */
+  .motif-twinkle {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: motif-twinkle 2.8s ease-in-out infinite;
+  }
+  /* Pine's campus pass detail: the cloche lid lifts on its right edge now
+     and then and a puff of steam escapes. */
+  .pass-lid {
+    transform-box: view-box;
+    transform-origin: 38px 34px;
+    animation: pass-lid 4.5s var(--ease-spring) 1.2s infinite;
+  }
+  .pass-steam {
+    animation: pass-steam 4.5s ease-out 1.2s infinite;
+  }
+  /* These are SVG animations, which phones run on the main thread: hold
+     them while the startup splash plays so the app's hydration and the
+     splash don't fight for frames. */
+  html:is([data-splash="play"], [data-splash="run"]) :is(.motif-steam, .motif-twinkle, .pass-lid, .pass-steam) {
+    animation-play-state: paused;
+  }
+  /* Engine buzz, always on (even idling). */
+  /* WhatsApp group card (ChannelPopover): it
+     grows out of the header button's corner (Base UI sets
+     --transform-origin) with a spring, its rows rise in one after another
+     (--i), and it shrinks back fast. Until it's been opened once, the
+     button gives two wiggles after the splash. */
+  .channel-pop {
+    transition:
+      transform var(--dur-slow) var(--ease-spring),
+      opacity var(--dur-base) var(--ease-out-expo);
+  }
+  .channel-pop[data-starting-style] {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  .channel-pop[data-ending-style] {
+    opacity: 0;
+    transform: scale(0.6);
+    transition:
+      transform var(--dur-quick) var(--ease-in-quad),
+      opacity var(--dur-quick) var(--ease-in-quad);
+  }
+  .channel-pop .channel-rise {
+    animation: channel-rise var(--dur-slow) var(--ease-out-expo) both;
+    animation-delay: calc(90ms + var(--i, 0) * 45ms);
+  }
+  .channel-wiggle {
+    animation: channel-wiggle 0.9s var(--ease-out-expo) 1.2s 2 both;
+  }
+  html:is([data-splash="play"], [data-splash="run"]) .channel-wiggle {
+    animation-play-state: paused;
+  }
+  .animate-ring-spin {
+    animation: ring-spin 5s linear infinite;
+  }
+  /* Home promo: the logo tile bobs gently. */
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
+  }
+  .animate-tab-pop {
+    animation: tab-pop var(--dur-slow) var(--ease-spring) both;
+  }
+  .animate-tab-stretch {
+    animation: tab-stretch var(--dur-slow) var(--ease-out-expo) both;
+  }
+  .animate-bounce-count {
+    animation: bounce-count var(--dur-base) var(--ease-spring);
+  }
+  /* The sign-in headline: a small rise only — never invisible, so it
+     still counts as the page's Largest Contentful Paint. */
+  .animate-settle {
+    animation: settle var(--dur-slow) var(--ease-out-expo) both;
+  }
+  .animate-slide-up-in {
+    animation: slide-up-in var(--dur-base) var(--ease-out-expo) both;
+  }
+  .animate-toast-in {
+    animation: toast-in var(--dur-base) var(--ease-out-expo) both;
+  }
+  .animate-overlay-in {
+    animation: overlay-in var(--dur-base) var(--ease-out-expo) both;
+  }
+  .animate-overlay-out {
+    animation: overlay-out var(--dur-base) var(--ease-in-quad) both;
+  }
+  .animate-confetti-fall {
+    animation-name: confetti-fall;
+    animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation-fill-mode: both;
+  }
+  .animate-ping-slow {
+    animation: ping-slow 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+  /* Deep-linked dish (?dish=): a rose outline that drops in from a little
+     further out, pulses once, then fades — "here it is", not a blinking
+     alarm. The outline lives on its own property so it never fights the
+     in-cart amber ring (box-shadow). */
+  .animate-highlight {
+    outline: 3px solid transparent;
+    animation: highlight-arrive 3s var(--ease-out-expo) both;
+  }
+  /* The menu's "tried N of M" bar fills from empty on first paint. */
+  .progress-fill {
+    transition: width 900ms var(--ease-out-expo) 200ms;
+  }
+  @starting-style {
+    .progress-fill {
+      width: 0;
+    }
+  }
+  /* Milestone progress rings fill from empty the first time they paint. */
+  .ring-fill {
+    transition: stroke-dashoffset 900ms var(--ease-out-expo) 150ms;
+  }
+  @starting-style {
+    .ring-fill {
+      stroke-dashoffset: var(--ring-empty);
+    }
+  }
+  .animate-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  /* On a lit amber button (Place order) the band is white light. */
+  .animate-shimmer.surface-primary::after {
+    background-image: linear-gradient(90deg, transparent, rgb(255 255 255 / 28%), transparent);
+  }
+  .animate-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--amber) 22%, transparent),
+      transparent
+    );
+    animation: shimmer-sweep 1.6s ease-in-out infinite;
+  }
+
+  /*
+   * Tactile press feedback — every native <button> gets a slight
+   * scale-down on tap, app-wide, with zero per-component changes since
+   * this codebase already uses semantic <button> consistently for real
+   * actions. `.pressable` opts in the handful of <Link>-styled cards/CTAs
+   * that aren't literal <button> elements. Deliberately not applied to
+   * plain text links (Cancel, Edit, "Track order →") — a scale effect on
+   * inline underlined text reads as glitchy, not tactile. Also skips
+   * [aria-haspopup] triggers (dropdown/dialog openers), matching the
+   * exclusion already built into components/ui/button.tsx's own
+   * active:not-aria-[haspopup]:translate-y-px — the reveal is the
+   * feedback there, not a press.
+   */
+  /* Lists the colour/shadow properties too: this rule is unlayered, so a
+     bare transition: transform here used to override every
+     transition-colors / transition-shadow utility on the same element and
+     make hovers snap instead of fade. */
+  button:not(:disabled):not([aria-haspopup]),
+  .pressable {
+    transition-property: transform, color, background-color, border-color, box-shadow, opacity, filter;
+    transition-duration: var(--dur-press);
+    transition-timing-function: ease-out;
+  }
+  button:not(:disabled):not([aria-haspopup]):active,
+  .pressable:active {
+    transform: scale(0.97);
+  }
+
+}
+
+@keyframes channel-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes channel-wiggle {
+  0%,
+  100% {
+    transform: none;
+  }
+  15% {
+    transform: rotate(-14deg) scale(1.08);
+  }
+  30% {
+    transform: rotate(11deg) scale(1.08);
+  }
+  45% {
+    transform: rotate(-7deg);
+  }
+  60% {
+    transform: rotate(4deg);
+  }
+}
+
+@keyframes logo-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 color-mix(in srgb, var(--primary) 0%, transparent));
+  }
+  50% {
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--primary) 55%, transparent));
+  }
+}
+@keyframes logo-ripple {
+  0% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+
+@keyframes highlight-arrive {
+  0% {
+    outline-offset: 10px;
+    outline-color: transparent;
+  }
+  18% {
+    outline-offset: 3px;
+    outline-color: var(--rose);
+  }
+  34% {
+    outline-offset: 6px;
+  }
+  50% {
+    outline-offset: 3px;
+  }
+  78% {
+    outline-color: var(--rose);
+  }
+  100% {
+    outline-offset: 3px;
+    outline-color: transparent;
+  }
+}
+
+@keyframes shimmer-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes ping-slow {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+
+@keyframes cook-steam {
+  0% {
+    opacity: 0;
+    translate: 0 4px;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: 0 -7px;
+  }
+}
+
+@keyframes cook-jiggle {
+  0%,
+  100% {
+    transform: none;
+  }
+  10% {
+    transform: rotate(-6deg);
+  }
+  20% {
+    transform: rotate(5deg);
+  }
+  30% {
+    transform: rotate(-3deg);
+  }
+  40% {
+    transform: none;
+  }
+  70% {
+    transform: translateY(-2px) scale(1.04);
+  }
+  80% {
+    transform: none;
+  }
+}
+
+@keyframes scooter-bob {
+  from {
+    transform: translateY(1px) rotate(-3deg);
+  }
+  to {
+    transform: translateY(-2px) rotate(2deg);
+  }
+}
+
+@keyframes shine-sweep {
+  0%,
+  70% {
+    translate: -110% 0;
+  }
+  100% {
+    translate: 110% 0;
+  }
+}
+
+/* The route: the road's lane dashes, measured on the four scenes (scene
+   percentages, the rider's wheels on the lane). Segment times follow the
+   on-screen distance, slowing a little with distance (perspective). */
+
+/* Size with distance — linear in the road's depth (it narrows to a
+   horizon at ~45% of the scene) — and the turn at the bend (x flips
+   through 0, which reads as the scooter swinging round). */
+
+/* Speed lines only while moving. */
+
+/* A puff of dust as it pulls away from idle. */
+
+@keyframes motif-twinkle {
+  0%,
+  100% {
+    opacity: 0.35;
+    scale: 0.6;
+  }
+  50% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+@keyframes pass-lid {
+  0%,
+  52%,
+  90%,
+  100% {
+    transform: none;
+  }
+  62%,
+  78% {
+    transform: translate(-1px, -4px) rotate(14deg);
+  }
+}
+@keyframes pass-steam {
+  0%,
+  58% {
+    opacity: 0;
+    translate: 0 3px;
+  }
+  70% {
+    opacity: 1;
+  }
+  90%,
+  100% {
+    opacity: 0;
+    translate: 0 -5px;
+  }
+}
+@keyframes motif-steam {
+  0% {
+    opacity: 0;
+    translate: 0 6%;
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: 0 -10%;
+  }
+}
+
+@keyframes ring-spin {
+  to {
+    rotate: 1turn;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -6px;
+  }
+}
+
+@keyframes tab-pop {
+  0% {
+    transform: scale(0.6) rotate(-14deg);
+  }
+  60% {
+    transform: scale(1.14) rotate(4deg);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes tab-stretch {
+  0% {
+    transform: scaleX(1.16) scaleY(0.88);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce-count {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.22);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes settle {
+  from {
+    translate: 0 10px;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+
+@keyframes slide-up-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-20px) translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(220px) translateX(var(--confetti-drift, 0px)) rotate(var(--confetti-rotate, 180deg));
+    opacity: 0;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes overlay-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/*
+ * Directional page-to-page View Transitions — home <-> restaurant menu,
+ * orders list <-> order detail, and menu -> order tracking right after
+ * placing an order. Each <Link>/router.push carries a "nav-forward" or
+ * "nav-back" transitionType (see the page files), which these rules turn
+ * into a slide. Keeps the page clickable mid-transition (unnamed content
+ * isn't hit-tested otherwise), and drops to an instant swap — the
+ * browser's own default — for reduce-motion, same as the rest of this
+ * file's motion.
+ */
+:root {
+  --vt-duration-exit: 150ms;
+  --vt-duration-enter: 210ms;
+  --vt-duration-move: 400ms;
+}
+
+::view-transition {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
+
+/*
+ * Safety net: everything above is opt-in under no-preference, but library
+ * animations (tw-animate's dialog/sheet enter/exit, Tailwind's pulse and
+ * ping) aren't. With reduce set, collapse all of them to an instant end
+ * state. Spinners are exempt — they're a progress signal, not decoration.
+ * (The startup splash animates with the Web Animations API, which this
+ * doesn't touch; components/splash/engine.ts handles reduced motion itself.)
+ */
+@media (prefers-reduced-motion: reduce) {
+  *:not(.animate-spin),
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes vt-fade {
+  from {
+    filter: blur(3px);
+    opacity: 0;
+  }
+  to {
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
+::view-transition-old(.nav-forward) {
+  --vt-slide-offset: -60px;
+  animation:
+    var(--vt-duration-exit) ease-in both vt-fade reverse,
+    var(--vt-duration-move) ease-in-out both vt-slide reverse;
+}
+::view-transition-new(.nav-forward) {
+  --vt-slide-offset: 60px;
+  animation:
+    var(--vt-duration-enter) ease-out var(--vt-duration-exit) both vt-fade,
+    var(--vt-duration-move) ease-in-out both vt-slide;
+}
+
+::view-transition-old(.nav-back) {
+  --vt-slide-offset: 60px;
+  animation:
+    var(--vt-duration-exit) ease-in both vt-fade reverse,
+    var(--vt-duration-move) ease-in-out both vt-slide reverse;
+}
+::view-transition-new(.nav-back) {
+  --vt-slide-offset: -60px;
+  animation:
+    var(--vt-duration-enter) ease-out var(--vt-duration-exit) both vt-fade,
+    var(--vt-duration-move) ease-in-out both vt-slide;
+}
+
+@keyframes vt-slide {
+  from {
+    translate: var(--vt-slide-offset);
+  }
+  to {
+    translate: 0;
+  }
+}
+
+/*
+ * The loading.tsx -> page.tsx handoff (see REVEAL_EXIT/REVEAL_ENTER in
+ * lib/nav-transition.ts): the skeleton slides down and out as the
+ * Suspense boundary resolves, the real content slides up and in.
+ */
+::view-transition-old(.slide-down) {
+  animation:
+    var(--vt-duration-exit) ease-out both vt-fade reverse,
+    var(--vt-duration-exit) ease-out both vt-slide-y reverse;
+}
+::view-transition-new(.slide-up) {
+  animation:
+    var(--vt-duration-enter) ease-in var(--vt-duration-exit) both vt-fade,
+    var(--vt-duration-move) ease-in both vt-slide-y;
+}
+
+@keyframes vt-slide-y {
+  from {
+    transform: translateY(10px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}

@@ -1,0 +1,82 @@
+import type { ReactNode } from "react";
+import { HeroMotif } from "@/components/theme/hero-motif";
+import { ScriptName } from "@/components/theme/script-name";
+import { PassArt } from "@/components/theme/pass-art";
+import { Avatar } from "@/components/taste/avatar";
+import { OpenTasteSheetButton } from "@/components/taste/taste-sheet";
+import { cn } from "@/lib/utils";
+
+/*
+ * The profile's "campus pass": the lit pine hero holding who you are and
+ * how you order — the student's initials in a pine circle inside a slowly
+ * turning pine / rose / amber ring (`food-ring`, still under reduced
+ * motion), name and member-since, the weekly-rank pill, and three stat
+ * tiles. Numbers use the display face; the no-show count turns hero-danger
+ * once it isn't zero, since that's the stat the ban system actually cares
+ * about. Stat labels are full-strength ivory (fainter fails on the hero's
+ * lit corner at this size).
+ */
+export function MemberCard({
+  initials,
+  avatar,
+  name,
+  memberSince,
+  rankBadge,
+  cravingsSolved,
+  streakDays,
+  noShows,
+}: {
+  initials: string;
+  /** The taste profile's avatar id, or null for the initials. */
+  avatar: string | null;
+  name: string;
+  memberSince: string;
+  /** <WeeklyRankBadge/>, which renders nothing when it has nothing flattering to say. */
+  rankBadge: ReactNode;
+  cravingsSolved: number;
+  streakDays: number;
+  noShows: number;
+}) {
+  return (
+    <section className="surface-hero glow-hero relative overflow-hidden rounded-[1.75rem] bg-hero p-5 text-hero-foreground">
+      {/* The palette's motif in the corner
+          and its small detail by the label. */}
+      <HeroMotif className="-top-16 -right-16 size-36" />
+      <PassArt className="top-3.5 right-4" />
+      <p className="relative text-label text-hero-accent">Campus pass</p>
+      <div className="relative mt-3 flex items-center gap-4">
+        {/* Tapping the avatar opens "Your taste" (the page hosts the sheet). */}
+        <OpenTasteSheetButton
+          aria-label="Your avatar and taste"
+          className="pressable relative block size-[4.5rem] shrink-0 rounded-full p-[3px] outline-none focus-visible:ring-3 focus-visible:ring-hero-foreground"
+        >
+          <span aria-hidden="true" className="food-ring animate-ring-spin absolute inset-0 rounded-full" />
+          <Avatar id={avatar} initials={initials} tone="pass" className="relative size-full text-2xl ring-2 ring-hero" />
+        </OpenTasteSheetButton>
+        <div className="min-w-0">
+          <h1 className="font-heading text-title font-bold">
+            <ScriptName text={name} tone="hero" />
+          </h1>
+          <p className="text-sm text-hero-foreground/85">Member since {memberSince}</p>
+        </div>
+      </div>
+
+      <div className="relative mt-4 empty:hidden">{rankBadge}</div>
+
+      <dl className="relative mt-5 grid grid-cols-3 gap-2 text-center">
+        <Stat value={cravingsSolved} label={cravingsSolved === 1 ? "craving solved" : "cravings solved"} />
+        <Stat value={streakDays} label="day streak" />
+        <Stat value={noShows} label={noShows === 1 ? "no-show" : "no-shows"} danger={noShows > 0} />
+      </dl>
+    </section>
+  );
+}
+
+function Stat({ value, label, danger = false }: { value: number; label: string; danger?: boolean }) {
+  return (
+    <div className="rim-light flex flex-col-reverse justify-end rounded-2xl bg-hero-foreground/10 px-1 py-2.5">
+      <dt className="text-xs leading-tight text-hero-foreground">{label}</dt>
+      <dd className={cn("font-heading text-2xl font-bold tabular-nums", danger && "text-hero-danger")}>{value}</dd>
+    </div>
+  );
+}

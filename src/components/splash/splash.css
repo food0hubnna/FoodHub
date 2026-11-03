@@ -1,0 +1,264 @@
+/*
+ * Startup splash (./app-splash.tsx), "The Cloche Reveal". Static layout and
+ * resting states only: all motion is Web Animations from ./engine.ts, which
+ * also sets data-splash on <html> — the overlay stays hidden unless this
+ * load plays it. A deep pine stage in both themes (the PWA launch screen,
+ * web-manifest background_color, is the same pine, so it hands straight
+ * over). The resting state is the finished logo — what reduced motion shows.
+ */
+.app-splash {
+  display: none;
+}
+html[data-splash="play"] .app-splash,
+html[data-splash="run"] .app-splash,
+html[data-splash="out"] .app-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Last resort if the engine dies mid-way: never cover the app for good.
+   (Not on "out", where the engine's own exit animation runs.) */
+html[data-splash="play"] .app-splash,
+html[data-splash="run"] .app-splash {
+  animation: sp-failsafe 1ms linear 9s both;
+}
+html[data-splash="play"],
+html[data-splash="run"] {
+  overflow: hidden;
+}
+html[data-splash="out"] .app-splash {
+  pointer-events: none;
+}
+
+.sp-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(70% 55% at 50% 40%, #17503a 0%, #11442f 55%, #0a2a1d 100%);
+  will-change: opacity;
+}
+
+/* A soft spotlight from above onto the cloche. */
+.sp-spot {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: min(120vw, 44rem);
+  height: 70dvh;
+  translate: -50% 0;
+  background: radial-gradient(50% 60% at 50% 70%, rgb(255 214 160 / 18%), transparent 70%);
+  clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sp-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* The close into the page's logo tile scales from the top-left corner. */
+  transform-origin: 0 0;
+  visibility: hidden;
+}
+html[data-splash-ran] .sp-stage {
+  visibility: visible;
+}
+
+/* The cloche / logo. Sized so it's never too big on a phone and short
+   enough for landscape. */
+.sp-hero {
+  position: relative;
+  width: min(62vw, 17rem, 34dvh);
+}
+.sp-hero > * {
+  position: absolute;
+}
+.sp-shadow {
+  left: 8%;
+  bottom: -4%;
+  width: 84%;
+  height: 9%;
+  border-radius: 50%;
+  /* A soft gradient, not filter: blur() — filters repaint as they scale. */
+  background: radial-gradient(closest-side, rgb(10 2 8 / 55%), rgb(10 2 8 / 0%));
+}
+.sp-glow {
+  left: 50%;
+  top: 52%;
+  width: 150%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(255 190 110 / 55%), rgb(255 160 90 / 0%));
+  opacity: 0;
+}
+.sp-pop {
+  inset: 0;
+  overflow: hidden;
+}
+.sp-strip {
+  display: block;
+  max-width: none;
+  height: 100%;
+}
+.sp-cloche {
+  bottom: 0;
+  transform-origin: 50% 100%;
+  opacity: 0;
+}
+.sp-cloche img {
+  transform-origin: 50% 100%;
+}
+.sp-cloche img,
+.sp-steam {
+  display: block;
+  width: 100%;
+  height: auto;
+  -webkit-user-drag: none;
+}
+.sp-steam {
+  bottom: 30%;
+  width: 30%;
+  opacity: 0;
+}
+.sp-steam.left {
+  left: -6%;
+  scale: -1 1;
+}
+.sp-steam.right {
+  right: -6%;
+}
+.sp-flash {
+  left: 50%;
+  top: 58%;
+  width: 120%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, #fff6e6, rgb(255 214 150 / 70%) 40%, rgb(255 190 110 / 0%));
+  opacity: 0;
+  pointer-events: none;
+}
+.sp-sparkle {
+  overflow: visible;
+  opacity: 0;
+}
+/* Everything that moves gets its own GPU layer up front, so nothing is
+   promoted (and repainted) mid-animation while the app loads underneath. */
+.sp-stage,
+.sp-hero > *,
+.sp-cloche img,
+.sp-strip,
+.sp-wipe,
+.sp-word,
+.sp-shine,
+.sp-tagline,
+.sp-spot {
+  will-change: transform, opacity;
+}
+
+/* "FoodHub" in gold: a gold gradient shown through the wordmark art. */
+.sp-word,
+.sp-tagline {
+  position: relative;
+  display: block;
+  -webkit-mask: var(--mask) center / contain no-repeat;
+  mask: var(--mask) center / contain no-repeat;
+}
+.sp-wipe {
+  display: block;
+  margin-top: 1.4rem;
+  overflow: hidden;
+}
+.sp-word {
+  width: min(78vw, 21rem, 42dvh);
+  overflow: hidden;
+  background: linear-gradient(180deg, #ffe7b8 0%, #f2b764 45%, #c9853a 100%);
+}
+.sp-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 85%) 50%, transparent 65%);
+  translate: -100% 0;
+}
+.sp-tagline {
+  width: min(66vw, 17.5rem, 36dvh);
+  margin-top: 0.7rem;
+  background: rgb(245 234 225 / 85%);
+}
+
+/* The light splash: the full stage is hidden, the tile and name show. */
+html[data-splash-mode="lite"] .sp-stage,
+html[data-splash-mode="lite"] .sp-spot {
+  display: none;
+}
+.sp-lite {
+  display: none;
+}
+html[data-splash-mode="lite"][data-splash-ran] .sp-lite {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(50% + 4.75rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  text-align: center;
+  will-change: transform, opacity;
+}
+.sp-lite-name {
+  /* No web font this early on a slow connection: a system serif. */
+  font: 700 2rem/1 Georgia, "Times New Roman", serif;
+  letter-spacing: -0.01em;
+  color: #f6c27a;
+}
+.sp-lite-tagline {
+  font: 600 0.8rem/1.2 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: rgb(245 234 225 / 85%);
+}
+
+/* The logo tile (BrandLogo's look: the mark on fixed ivory). In the light
+   splash it sits centred; in both it ends flying onto the page's logo. */
+.sp-tile {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7.5rem;
+  aspect-ratio: 1;
+  margin: -3.75rem 0 0 -3.75rem;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 1.75rem;
+  background: #f8f3e4;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 16%), 0 18px 40px -14px rgb(212 165 55 / 55%);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.sp-tile img {
+  display: block;
+  width: 92%;
+  height: auto;
+}
+.sp-tile-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 70%) 50%, transparent 65%);
+  translate: -100% 0;
+  will-change: transform;
+}
+
+@keyframes sp-failsafe {
+  to {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+}
