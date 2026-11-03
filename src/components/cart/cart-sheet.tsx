@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Banknote, Loader2, MapPin, Phone, Plus, QrCode, X } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
+import { HandiSticker } from "@/components/handi/handi-says";
 import { IconTile } from "@/components/icon-tile";
 import { CartLineRow } from "@/components/cart/cart-line-row";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
@@ -62,19 +63,20 @@ export function CartSheet({
         showCloseButton={false}
         className="mx-auto max-h-[92dvh] w-full max-w-md gap-0 rounded-t-[2rem] border-t-0 bg-background p-0 text-base"
       >
-        <header className="flex items-start gap-3 border-b px-6 pt-6 pb-4">
+        <header className="flex items-center gap-2 border-b border-dashed py-3 pr-6 pl-3">
+          <HandiSticker pose="joy" sizes="72px" className="size-18" />
           <div className="min-w-0 flex-1">
-            <SheetTitle className="font-heading text-headline font-bold">Your cart</SheetTitle>
+            <SheetTitle className="font-heading text-headline font-bold">Handi&apos;s bag</SheetTitle>
             <SheetDescription className={cn("mt-0.5 truncate text-base", empty && "sr-only")}>
               {empty
-                ? "Your cart is empty"
+                ? "The bag is empty"
                 : `${cart.restaurantName} · ${cartTotals(cart).items} ${cartTotals(cart).items === 1 ? "item" : "items"}`}
             </SheetDescription>
           </div>
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            aria-label="Close cart"
+            aria-label="Close bag"
             className="flex size-12 shrink-0 items-center justify-center rounded-full bg-secondary outline-none hover:bg-border focus-visible:ring-3 focus-visible:ring-ring/80"
           >
             <X className="size-5" />
@@ -104,7 +106,7 @@ function EmptyCart({ onBrowse }: { onBrowse: () => void }) {
     <div className="px-8 pb-14">
       <EmptyState
         art="handi"
-        title="Nothing here yet"
+        title="The bag's empty"
         action={
           <Link
             href="/"
@@ -265,7 +267,7 @@ function CartContents({
           </button>
         )}
 
-        <div className="mt-4 divide-y overflow-hidden rounded-[1.5rem] border bg-card shadow-card">
+        <div className="paper mt-4 divide-y divide-dashed overflow-hidden border bg-card shadow-card">
           <div className="flex items-center gap-3.5 px-5 py-4">
             <IconTile>
               <MapPin className="size-5" aria-hidden="true" />
@@ -290,7 +292,8 @@ function CartContents({
           />
         )}
 
-        <div className="mt-4 rounded-[1.5rem] border bg-card px-5 py-4 shadow-card">
+        <div className="mt-4 drop-shadow-sm">
+        <div className="receipt bg-card px-5 pt-4">
           <dl className="space-y-1.5">
             <div className="flex justify-between text-muted-foreground">
               <dt>Item total</dt>
@@ -318,7 +321,7 @@ function CartContents({
               </dd>
             </div>
           </dl>
-          <ul className="mt-3 space-y-1.5 border-t pt-3 text-sm text-muted-foreground">
+          <ul className="mt-3 space-y-1.5 border-t border-dashed pt-3 text-sm text-muted-foreground">
             <li className="flex items-center gap-2.5">
               <Banknote className="size-4 shrink-0 text-rose" aria-hidden="true" />
               Cash at the gate — exact change helps.
@@ -329,12 +332,13 @@ function CartContents({
             </li>
           </ul>
         </div>
+        </div>
       </div>
 
       <footer className="border-t bg-background px-6 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
         {!orderingEnabled && (
           <p className="mb-3 rounded-2xl bg-secondary px-4 py-3 text-center text-sm">
-            {closedNote ? `${closedNote}.` : "Ordering is closed right now."} Your cart will
+            {closedNote ? `${closedNote}.` : "Ordering is closed right now."} Your bag will
             wait.
           </p>
         )}

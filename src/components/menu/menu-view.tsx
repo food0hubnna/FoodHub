@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Drumstick, Leaf, Search, SearchX, UtensilsCrossed, X, type LucideIcon } from "lucide-react";
+import { Drumstick, Leaf, Search, SearchX, UtensilsCrossed, X } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { CartBar } from "@/components/cart/cart-bar";
+import { SectionTitle } from "@/components/handi/section-title";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -162,7 +163,7 @@ export function MenuView({
         // a scrolling rail of Veg / Non-veg and the categories — so none of
         // them scroll away on a 40-dish menu. Search collapses to an icon
         // and expands in place over the rail.
-        <div className="sticky top-0 z-10 -mx-6 border-b bg-background/95 px-6 py-2.5 backdrop-blur">
+        <div className="sticky top-0 z-10 -mx-6 border-b border-dashed bg-background/95 px-6 py-2.5 backdrop-blur">
           <div className="flex items-center gap-2">
             {searchOpen ? (
               <label className="relative min-w-0 flex-1">
@@ -267,12 +268,9 @@ export function MenuView({
 
       {visible.map((section) => (
         <section key={sectionKey(section)} aria-labelledby={`sec-${sectionKey(section)}`} className="pt-7">
-          <SectionHeading
-            id={`sec-${sectionKey(section)}`}
-            name={sectionName(section)}
-            count={menuItems(section).length}
-            icon={getCuisineIcon(sectionName(section))}
-          />
+          <SectionTitle id={`sec-${sectionKey(section)}`} aside={menuItems(section).length}>
+            {sectionName(section)}
+          </SectionTitle>
           {(() => {
             const items = menuItems(section);
             // Photo dishes in the grid; dishes without a photo as a list under it.
@@ -329,10 +327,10 @@ export function MenuView({
             return (
               <>
                 {withPhoto.length > 0 && (
-                  <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-6">{withPhoto.map(card)}</div>
+                  <div className="mt-4 grid grid-cols-2 gap-3">{withPhoto.map(card)}</div>
                 )}
                 {withoutPhoto.length > 0 && (
-                  <div className="mt-4 divide-y rounded-3xl border bg-card shadow-card">{withoutPhoto.map(card)}</div>
+                  <div className="paper mt-4 divide-y divide-dashed border bg-card shadow-card">{withoutPhoto.map(card)}</div>
                 )}
               </>
             );
@@ -373,14 +371,14 @@ export function MenuView({
       <AlertDialog open={pendingAdd !== null} onOpenChange={(open) => !open && setPendingAdd(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-lg font-bold">Start a new cart?</AlertDialogTitle>
+            <AlertDialogTitle className="text-lg font-bold">Start a new bag?</AlertDialogTitle>
             <AlertDialogDescription>
-              Your cart has items from {cart.restaurantName}. Each order is from one restaurant, so
-              adding this will clear that cart.
+              Handi&apos;s bag has food from {cart.restaurantName}. Each order is from one kitchen, so
+              adding this will empty the bag.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep my cart</AlertDialogCancel>
+            <AlertDialogCancel>Keep my bag</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (pendingAdd)
@@ -391,7 +389,7 @@ export function MenuView({
                 setPendingAdd(null);
               }}
             >
-              Start new cart
+              Start new bag
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -401,25 +399,6 @@ export function MenuView({
 }
 
 type Diet = "all" | "veg" | "nonveg";
-
-/**
- * A menu section's heading: its food icon on a blush tile, the name, and a
- * count pill. The icon is picked by the caller and passed in — the React
- * compiler lint rejects choosing a component during render.
- */
-function SectionHeading({ id, name, count, icon: Icon }: { id: string; name: string; count: number; icon: LucideIcon }) {
-  return (
-    <h2 id={id} className="flex items-center gap-2.5">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand-soft-foreground">
-        <Icon className="size-5" aria-hidden="true" />
-      </span>
-      <span className="min-w-0 font-heading text-title font-bold">{name}</span>
-      <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-muted-foreground tabular-nums">
-        {count}
-      </span>
-    </h2>
-  );
-}
 
 /** One half of the Veg / Non-veg filter — tap again to show everything. */
 function DietToggle({ kind, active, onToggle }: { kind: "veg" | "nonveg"; active: boolean; onToggle: () => void }) {

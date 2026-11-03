@@ -2,12 +2,11 @@ import { AboutFoodHubDialog } from "@/components/home/about-foodhub-dialog";
 import { BrandLogo } from "@/components/brand-logo";
 import { ChannelPopover } from "@/components/channel/channel-popover";
 import { HandiSays } from "@/components/handi/handi-says";
-import { ScriptName } from "@/components/theme/script-name";
+import { AnimatedName } from "@/components/handi/animated-name";
 import { Avatar, initialsOf } from "@/components/taste/avatar";
 import { OpenTasteSheetButton } from "@/components/taste/taste-sheet";
 import type { TimeOfDay } from "@/lib/date";
 import { greeting } from "@/lib/handi/lines";
-import { cn } from "@/lib/utils";
 
 /**
  * Home's header: the logo (opens About), the WhatsApp group button
@@ -43,14 +42,12 @@ export function HomeHeader({
         </div>
       </div>
       <HandiSays pose={pose} preload className="mt-5">
-        <h1 className="font-heading text-base leading-tight font-bold">
+        <h1 className="font-heading text-title leading-tight font-bold break-words">
           {hello}
-          {name ? "," : ""}
           {name && (
-            <ScriptName
-              text={name}
-              className={cn("mt-0.5 block leading-[1.1]", name.length > 9 ? "text-[1.9rem]" : "text-[2.5rem]")}
-            />
+            <>
+              , <AnimatedName name={name} />
+            </>
           )}
         </h1>
         <p className="mt-0.5 text-sm text-muted-foreground">{line}</p>

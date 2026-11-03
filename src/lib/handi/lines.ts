@@ -28,3 +28,11 @@ export function orderLine(status: OrderStatus): string {
   if (status === "delivered") return "Hope it was worth the wait. Come back hungry!";
   return "I'll have it at Main Gate by then. We'll call you when we reach.";
 }
+
+/** On the cart bar, as the bag fills. */
+export function bagLine(items: number): string {
+  if (items <= 1) return "Good start.";
+  if (items === 2) return "2 dishes? Excellent choice.";
+  if (items <= 4) return "Now that's a proper feast.";
+  return "Sharing this, right?";
+}

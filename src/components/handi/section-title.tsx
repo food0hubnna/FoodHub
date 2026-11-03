@@ -27,7 +27,7 @@ export function SectionTitle({
 }) {
   return (
     <div className={cn("flex flex-wrap items-end justify-between gap-x-3", className)}>
-      <h2 id={id} className="flex items-center gap-1.5 font-display text-title font-bold whitespace-nowrap">
+      <h2 id={id} className="flex items-center gap-1.5 min-w-0 font-display text-title font-bold">
         <Sprig />
         {children}
       </h2>

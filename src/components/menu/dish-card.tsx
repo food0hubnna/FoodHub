@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { ChevronRight, Minus, Plus, Repeat, Star } from "lucide-react";
 import { BlurImage } from "@/components/blur-image";
+import { HandiSticker } from "@/components/handi/handi-says";
 import { VegMark } from "@/components/veg-mark";
 import { MAX_QUANTITY } from "@/lib/cart/store";
 import { getDishPhoto } from "@/lib/data/dish-photos";
@@ -13,19 +14,19 @@ import { cn } from "@/lib/utils";
 import { HeartButton } from "./heart-button";
 
 /*
- * One dish in the menu's two-column photo grid: a big square photo with
- * the add control floating in its corner (one lit amber pill that widens
- * from a round "+" into the "− n +" stepper once the dish is in the cart,
- * while the photo picks up an amber ring), prices in amber, and name + price on the page underneath — no bordered
- * row, no "ADD" button hanging off a thumbnail. Dishes without a photo
- * render as a compact list row instead (name, price, same add control).
+ * One dish in the menu's two-column grid: a small arched card, the same shape
+ * as the kitchens on Home, with the photo in its window and the add control
+ * floating in the corner (one lit amber pill that widens from a round "+" into
+ * the "− n +" stepper once the dish is in the bag). Handi hops in on the card's
+ * shoulder at that moment. Dishes without a photo render as a compact list row
+ * instead (name, price, same add control).
  *
  * Size mode (`portions`, e.g. Apples 500 g / 1 kg): one card for the dish —
  * base name, every size's price, the photo — whose "+" opens the menu's
  * size picker instead of adding straight away; once any size is in the
  * cart the control shows the total with a chevron and reopens it.
  *
- * A heart (top-right of the photo, or beside the control in a list row)
+ * A heart (bottom-left of the photo, or beside the control in a list row)
  * saves the dish to the student's private liked dishes (HeartButton). A
  * sized card has one heart, on its first size.
  */
@@ -104,7 +105,7 @@ export function DishCard({
       aria-haspopup="dialog"
       aria-label={
         inCart
-          ? `Change ${name}, ${quantity} in cart`
+          ? `Change ${name}, ${quantity} in the bag`
           : `Choose ${name}: ${portions.map((p) => p.label).join(" or ")}`
       }
       className={cn(
@@ -130,7 +131,7 @@ export function DishCard({
       type="button"
       onClick={onAdd}
       aria-haspopup="dialog"
-      aria-label={inCart ? `Add another ${dish.name} (${quantity} in cart)` : `Add ${dish.name}`}
+      aria-label={inCart ? `Add another ${dish.name} (${quantity} in the bag)` : `Add ${dish.name}`}
       className={cn(
         "surface-primary relative flex size-11 items-center justify-center rounded-full bg-primary text-primary-foreground outline-none hover:brightness-110 focus-visible:ring-3 focus-visible:ring-ring/80",
         inCart ? "glow-amber" : "shadow-raised",
@@ -274,17 +275,22 @@ export function DishCard({
   }
 
   return (
-    <article id={`dish-${dish.id}`} className="min-w-0 scroll-mt-24">
+    <article id={`dish-${dish.id}`} className="arch-card-sm relative min-w-0 scroll-mt-24 border bg-card p-1.5 pb-2.5 shadow-card">
       {sizeAnchors}
+      {inCart && (
+        <span aria-hidden="true" className="animate-handi-hop absolute -top-3 -left-2 z-10">
+          <HandiSticker pose="excited" sizes="48px" className="size-12 drop-shadow-sm" />
+        </span>
+      )}
       <div
         className={cn(
-          "group/photo relative aspect-square rounded-3xl bg-secondary transition-shadow",
-          inCart && "ring-3 ring-primary ring-offset-2 ring-offset-background",
+          "arch-sm group/photo relative aspect-square bg-secondary transition-shadow",
+          inCart && "ring-2 ring-primary",
           highlighted &&
             "animate-highlight motion-reduce:outline-3 motion-reduce:outline-offset-3 motion-reduce:outline-rose",
         )}
       >
-        <div className="absolute inset-0 overflow-hidden rounded-3xl">
+        <div className="arch-sm absolute inset-0 overflow-hidden">
           {/* The photo leans in a little on hover (mouse only). On a wrapper,
               so it doesn't fight BlurImage's own fade-in transition. */}
           <div className="absolute inset-0 transition-transform duration-(--dur-slow) ease-out-expo group-hover/photo:scale-105">
@@ -297,9 +303,11 @@ export function DishCard({
           </div>
         </div>
 
-        <div className="absolute top-2 right-2">
-          <HeartButton dishId={dish.id} dishName={name} initialLiked={liked} />
-        </div>
+        {!inCart && (
+          <div className="absolute bottom-2 left-2">
+            <HeartButton dishId={dish.id} dishName={name} initialLiked={liked} />
+          </div>
+        )}
 
         {soldOut && (
           <span className="absolute inset-x-0 bottom-3 mx-auto w-fit rounded-full bg-card/90 px-3 py-1 text-xs font-semibold text-muted-foreground backdrop-blur-sm">

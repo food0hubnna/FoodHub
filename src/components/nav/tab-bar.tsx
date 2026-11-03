@@ -31,8 +31,10 @@ type Drag = { pointerId: number; startX: number; dragging: boolean };
 /**
  * The floating bottom bar for the three top-level student screens. It
  * lives in the root layout rather than in each page, so it stays mounted
- * across tab changes: the bar's top edge swells up around Handi, and the swell
- * slides (with a spring) to the tab you tapped, Handi standing in for its icon. It shows on exactly
+ * across tab changes. It's a lit forest bar in both themes whose top edge swells
+ * up around Handi: tap a tab and the swell slides across, squashing and settling
+ * like liquid as it lands, while Handi hops over and stands in for that tab's
+ * icon. It shows on exactly
  * "/", "/orders" and "/profile"; on a menu or an order's ticket it slides
  * down out of the way (and comes back up when you return); everywhere else
  * (sign-in, welcome, admin, legal pages) it isn't rendered at all.
@@ -71,7 +73,7 @@ export function TabBar() {
   function slotWidth() {
     const nav = navRef.current;
     if (!nav) return 0;
-    // 0.375rem (p-1.5) of padding on each side.
+    // The bar's side padding, read rather than assumed.
     const pad = parseFloat(getComputedStyle(nav).paddingLeft) || 6;
     return (nav.clientWidth - pad * 2) / TABS.length;
   }
@@ -146,33 +148,37 @@ export function TabBar() {
         onPointerMove={onPointerMove}
         onPointerUp={(e) => endDrag(e, true)}
         onPointerCancel={(e) => endDrag(e, false)}
-        className="pointer-events-auto relative mx-auto grid w-full max-w-md touch-pan-y grid-cols-3 paper border bg-card p-1.5 shadow-raised select-none"
+        className="glow-hero pointer-events-auto relative mx-auto grid w-full max-w-md touch-pan-y grid-cols-3 rounded-[1.25rem] border border-hero-accent/28 bg-(--hero-b) px-3.5 pt-1 select-none"
       >
         {/* The swell. The outer span slides between tabs (translateX by whole
             tab widths — it's exactly one tab wide), or follows the finger 1:1
-            while dragged. The curve shares the bar's fill and border, and runs
+            while dragged. The curve is the bar's own fill and border, and runs
             a little into the bar to hide the border under it, so the two read
-            as one piece. Handi pops as it lands and lifts while held. */}
+            as one piece. Keyed by tab, so it lands and Handi hops on each move. */}
         <span
           aria-hidden="true"
           className={cn(
-            "pointer-events-none absolute inset-y-0 left-1.5 z-20 w-[calc((100%-0.75rem)/3)]",
+            "pointer-events-none absolute inset-y-0 left-3.5 z-20 w-[calc((100%-1.75rem)/3)]",
             !dragging && "transition-transform duration-(--dur-slow) ease-spring",
           )}
           style={{ transform: held ? `translateX(${held.x}px)` : `translateX(${pill * 100}%)` }}
         >
-          <svg viewBox="0 0 88 26" className="absolute -top-6 left-1/2 h-[1.625rem] w-[5.5rem] -translate-x-1/2 overflow-visible">
-            <path d="M0 24C20 24 22 0 44 0S68 24 88 24V26H0Z" fill="var(--card)" />
-            <path d="M0 24C20 24 22 0 44 0S68 24 88 24" fill="none" stroke="var(--border)" />
-          </svg>
-          <span className="absolute -top-3 left-1/2 size-16 -translate-x-1/2 rounded-full bg-amber/25 blur-xl" />
-          <span
-            className={cn(
-              "absolute -top-7 left-1/2 -translate-x-1/2 transition-transform duration-(--dur-quick)",
-              dragging && "-translate-y-1.5 scale-110",
-            )}
-          >
-            <HandiSticker key={pill} pose={dragging ? "excited" : "happy"} sizes="64px" preload className="animate-pop-in size-[3.75rem]" />
+          <span className="absolute -top-[1.625rem] left-1/2 h-[1.75rem] w-full max-w-24 -translate-x-1/2">
+            <svg key={pill} viewBox="0 0 96 28" preserveAspectRatio="none" className="animate-swell-land block size-full overflow-visible">
+              <path d="M0 26C24 26 26 0 48 0S72 26 96 26V28H0Z" fill="var(--hero-b)" />
+              <path d="M0 26C24 26 26 0 48 0S72 26 96 26" fill="none" stroke="var(--hero-accent)" strokeOpacity="0.28" />
+            </svg>
+          </span>
+          <span className="absolute -top-7 left-1/2 -translate-x-1/2">
+            <span
+              key={pill}
+              className={cn(
+                "block transition-transform duration-(--dur-quick)",
+                dragging ? "-translate-y-1.5 scale-110" : "animate-handi-hop",
+              )}
+            >
+              <HandiSticker pose="happy" sizes="60px" preload className="animate-handi-idle size-[3.625rem] drop-shadow-[0_3px_5px_rgb(0_0_0/0.35)]" />
+            </span>
           </span>
         </span>
 
@@ -187,8 +193,8 @@ export function TabBar() {
               aria-current={isActive ? "page" : undefined}
               onClick={(event) => onLinkClick(event, isActive)}
               className={cn(
-                "pressable relative z-10 flex h-14 flex-col items-center justify-end gap-0.5 rounded-2xl pb-1 text-xs font-semibold outline-none transition-colors duration-(--dur-base) focus-visible:ring-3 focus-visible:ring-ring/80",
-                isLit ? "font-bold text-primary" : "text-muted-foreground hover:text-foreground",
+                "pressable relative z-10 flex h-14 flex-col items-center justify-end gap-0.5 rounded-2xl pb-1.5 text-xs font-semibold outline-none transition-colors duration-(--dur-base) focus-visible:ring-3 focus-visible:ring-hero-accent/80",
+                isLit ? "font-bold text-hero-accent" : "text-hero-foreground/80 hover:text-hero-foreground",
               )}
             >
               {/* Handi covers the lit tab's icon, so it steps aside. */}
