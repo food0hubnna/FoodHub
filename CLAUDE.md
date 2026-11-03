@@ -18,5 +18,5 @@ VIT-AP Main Gate; payment is cash or UPI on delivery.
 - Orders are created only through the `place_order()` database function.
 - Dish and cover photos live in `public/menu`, mapped in
   `src/lib/data/dish-photos.ts`. Admin uploads override them.
-- Brand assets are built from `public/brand/logo-source.webp` by
+- Brand assets are built from `public/brand/FoodHub_logo_transparent.png` by
   `scripts/build-brand-assets.mjs`.

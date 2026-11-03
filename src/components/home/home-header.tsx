@@ -49,7 +49,7 @@ export function HomeHeader({
       />
       <div className="relative flex items-center justify-between">
         <AboutFoodHubDialog>
-          <BrandLogo splashTarget className="size-12 rounded-2xl" />
+          <BrandLogo splashTarget className="size-12" />
         </AboutFoodHubDialog>
         <div className="flex items-center gap-2.5">
           <ChannelPopover />

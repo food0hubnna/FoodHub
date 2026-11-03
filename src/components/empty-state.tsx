@@ -1,21 +1,13 @@
 import type { ReactNode } from "react";
-import Image from "next/image";
 import type { LucideIcon } from "lucide-react";
+import { RandomAnimation } from "@/components/random-animation";
 import { cn } from "@/lib/utils";
 
-// Three real menu photos fanned out like plates on a table — the "nothing
-// here yet, but this is what's waiting" art for the empty cart and the
-// empty orders list.
-const PLATES = [
-  "/menu/dishes/chicken-fry-biryani.jpg",
-  "/menu/dishes/mixed-chicken-biryani.jpg",
-  "/menu/dishes/chicken-lollipop.jpg",
-];
-
 /**
- * Shared empty state. `art="plates"` for the big "you haven't started yet"
- * moments; pass an `icon` instead for small, in-place ones like a search
- * with no results, where a photo spread would be too loud.
+ * Shared empty state. `art="handi"` for the big "you haven't started yet"
+ * moments, like the empty cart and orders list; pass an `icon` instead for
+ * small, in-place ones like a search with no results, where Handi would be
+ * too loud.
  */
 export function EmptyState({
   art,
@@ -25,7 +17,7 @@ export function EmptyState({
   action,
   compact = false,
 }: {
-  art?: "plates";
+  art?: "handi";
   icon?: LucideIcon;
   title: string;
   children?: ReactNode;
@@ -34,23 +26,8 @@ export function EmptyState({
 }) {
   return (
     <div className={cn("flex flex-col items-center text-center", compact ? "py-12" : "pt-12 pb-6")}>
-      {art === "plates" && (
-        <div className="relative h-28 w-56" aria-hidden="true">
-          {PLATES.map((src, i) => (
-            <span
-              key={src}
-              className={cn(
-                "animate-pop-in absolute top-1/2 size-24 -translate-y-1/2 overflow-hidden rounded-3xl border-4 border-background bg-secondary shadow-raised",
-                i === 0 && "left-0 -rotate-10",
-                i === 1 && "left-1/2 z-10 size-28 -translate-x-1/2",
-                i === 2 && "right-0 rotate-10",
-              )}
-              style={{ animationDelay: `${i * 90}ms` }}
-            >
-              <Image src={src} alt="" fill sizes="112px" className="object-cover" />
-            </span>
-          ))}
-        </div>
+      {art === "handi" && (
+        <RandomAnimation set="empty" sizes="144px" className="animate-pop-in size-36 rounded-full bg-hero shadow-raised" />
       )}
       {Icon && (
         <span

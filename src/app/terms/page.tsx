@@ -8,7 +8,7 @@ export default function TermsPage() {
   return (
     <main className="mx-auto w-full max-w-md px-6 py-12">
       <Link href="/" className="inline-flex items-center gap-2.5">
-        <BrandLogo className="size-10 rounded-xl" />
+        <BrandLogo className="size-10" />
         <span className="font-heading text-lg font-bold">FoodHub</span>
       </Link>
 

@@ -37,8 +37,7 @@ export function statusBadge(status: OrderStatus): { label: string; className: st
 
 /**
  * The two admin-driven jumps: confirm with the restaurant, then mark
- * delivered. `preparing`/`out_for_delivery` stay valid enum values (and
- * still show on the student timeline) but aren't clicked through
+ * delivered. `preparing`/`out_for_delivery` stay valid enum values but aren't clicked through
  * individually — delivery timing runs on fixed ETA slots, not admin
  * clicks, so there's nothing for a "start preparing" / "out for delivery"
  * button to actually decide.
@@ -66,46 +65,3 @@ export function advanceLabel(status: OrderStatus): string | null {
   }
 }
 
-export type TimelineStepState = "done" | "current" | "upcoming";
-export type TimelineStep = { label: string; state: TimelineStepState };
-
-/**
- * The 3-row student-facing timeline. Collapses preparing/out_for_delivery
- * into one row — we don't have a per-status timestamp to show a 4th step
- * meaningfully. Callers handle 'cancelled' separately (no timeline for it).
- */
-export function orderTimeline(status: OrderStatus): TimelineStep[] {
-  let confirmed: TimelineStepState;
-  let preparing: TimelineStepState;
-
-  switch (status) {
-    case "pending":
-      confirmed = "current";
-      preparing = "upcoming";
-      break;
-    case "confirmed":
-      confirmed = "done";
-      preparing = "current";
-      break;
-    case "preparing":
-    case "out_for_delivery":
-      confirmed = "done";
-      preparing = "current";
-      break;
-    case "delivered":
-      confirmed = "done";
-      preparing = "done";
-      break;
-    default:
-      // 'cancelled' has no timeline — callers branch on it before calling this.
-      confirmed = "upcoming";
-      preparing = "upcoming";
-  }
-
-  return [
-    { label: "Order placed", state: "done" },
-    // Only claims "confirmed" once it's true; while pending it's still waiting.
-    { label: confirmed === "current" ? "Pending confirmation" : "Restaurant confirmed", state: confirmed },
-    { label: "Preparing & out for delivery", state: preparing },
-  ];
-}

@@ -47,3 +47,4 @@ next-env.d.ts
 
 # Full-size source photos; public/menu holds the web versions
 /photo-originals
+/animation-originals

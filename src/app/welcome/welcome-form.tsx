@@ -36,7 +36,7 @@ export function WelcomeForm({ defaultName }: { defaultName: string }) {
       <div className="flex-1 px-6 pt-6 pb-8">
         {/* The lit pine hero, as one header card. */}
         <header className="animate-slide-up-in surface-hero glow-hero relative overflow-hidden rounded-[2rem] bg-hero p-5 text-hero-foreground">
-          <BrandLogo className="relative size-14 rounded-2xl shadow-raised ring-2 ring-hero-foreground/15" />
+          <BrandLogo className="relative size-14 shadow-raised ring-2 ring-hero-foreground/15" />
           <h1 className="relative mt-4 font-heading text-display font-bold">Almost there</h1>
           <p className="relative mt-1.5 text-lg leading-snug text-hero-foreground/85">
             We only ask once, then you go straight to the food.

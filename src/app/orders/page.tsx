@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ViewTransition } from "react";
-import { ArrowRight, ChevronRight, RotateCcw, Star } from "lucide-react";
+import { ArrowRight, ChevronRight, Clock, RotateCcw, Star } from "lucide-react";
 import { BlurImage } from "@/components/blur-image";
 import { EmptyState } from "@/components/empty-state";
 import { getDishPhoto } from "@/lib/data/dish-photos";
 import { getUploadedPhotos } from "@/lib/data/uploaded-photos";
 import { getOrderHistory, type OrderSummary } from "@/lib/data/orders";
-import { formatDayHeading, formatTime, istDayKey } from "@/lib/date";
+import { deliveryWindow, formatDayHeading, formatTime, istDayKey } from "@/lib/date";
 import { formatRupees } from "@/lib/format";
 import { NAV_TRANSITION, REVEAL_ENTER } from "@/lib/nav-transition";
 import { formatOrderNumber, isActiveStatus, statusBadge } from "@/lib/orders/status";
-import { DeliveryRoad } from "@/components/orders/delivery-road";
 import { requireProfile } from "@/lib/profile";
 import { cn } from "@/lib/utils";
 
@@ -19,7 +18,7 @@ export const metadata: Metadata = { title: "Your orders · FoodHub", robots: { i
 
 /*
  * Orders still on their way are pinned in an "In progress" section with a
- * clear Track button; everything else is grouped by IST day ("Today",
+ * their delivery time; everything else is grouped by IST day ("Today",
  * "Yesterday", "Wed 17 Sep") as compact rows inside one card per day, so a
  * long history reads as a timeline instead of 30 identical cards that all
  * say "Today,".
@@ -96,7 +95,7 @@ export default async function OrdersPage() {
 function EmptyOrders() {
   return (
     <EmptyState
-      art="plates"
+      art="handi"
       title="No orders yet"
       action={
         <Link
@@ -107,7 +106,7 @@ function EmptyOrders() {
         </Link>
       }
     >
-      Your first order shows up right here, start to finish.
+      Your first order shows up right here.
     </EmptyState>
   );
 }
@@ -139,7 +138,7 @@ function OrderThumb({ order, className }: { order: OrderSummary; className?: str
 }
 
 function ActiveOrderCard({ order }: { order: OrderSummary }) {
-  const badge = statusBadge(order.status);
+  const eta = deliveryWindow(order.createdAt);
   return (
     <Link
       href={`/orders/${order.id}`}
@@ -156,26 +155,20 @@ function ActiveOrderCard({ order }: { order: OrderSummary }) {
             </p>
           </div>
           <p className="truncate text-sm">{order.itemsSummary}</p>
-          <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground tabular-nums">
-            <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${badge.className}`}>{badge.label}</span>
-            <span>
-              {formatDayHeading(order.createdAt)}, {formatTime(order.createdAt)} · Token{" "}
-              <span className="font-semibold text-foreground">{formatOrderNumber(order.dailyNumber)}</span>
-            </span>
+          <p className="mt-1 text-sm text-muted-foreground tabular-nums">
+            {formatDayHeading(order.createdAt)}, {formatTime(order.createdAt)} · Token{" "}
+            <span className="font-semibold text-foreground">{formatOrderNumber(order.dailyNumber)}</span>
           </p>
         </div>
       </div>
-      <div className="mt-3">
-        <DeliveryRoad
-          status={order.status}
-          restaurantName={order.restaurantName}
-          createdAt={order.createdAt}
-          tone="card"
-          showMessage={false}
-        />
-      </div>
+      <p className="mt-3 flex items-center gap-2 rounded-2xl bg-secondary px-3.5 py-2.5 text-sm font-semibold">
+        <Clock className="size-4 shrink-0 text-primary" aria-hidden="true" />
+        <span>
+          {eta.lead} {eta.time}
+        </span>
+      </p>
       <span className="surface-primary mt-3 flex h-11 items-center justify-center gap-1.5 rounded-full bg-primary text-sm font-bold text-primary-foreground">
-        Track order <ArrowRight className="size-4" aria-hidden="true" />
+        View order <ArrowRight className="size-4" aria-hidden="true" />
       </span>
     </Link>
   );

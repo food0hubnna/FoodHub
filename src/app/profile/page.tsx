@@ -20,7 +20,6 @@ import { getOrderStats, hasActiveOrder } from "@/lib/data/orders";
 import { getMyWeeklyRank } from "@/lib/data/rank";
 import { getRestaurantCount } from "@/lib/data/restaurants";
 import { getLikedDishes } from "@/lib/data/favorites";
-import { getMilestoneRewardClaimedAt } from "@/lib/data/rewards";
 import { formatMonthYear } from "@/lib/date";
 import { NAV_TRANSITION, REVEAL_ENTER } from "@/lib/nav-transition";
 import { requireProfile } from "@/lib/profile";
@@ -41,12 +40,11 @@ export default async function ProfilePage() {
   const weeklyRankPromise = getMyWeeklyRank();
 
   const profile = await profilePromise;
-  const [orderInProgress, orderStats, totalRestaurants, weeklyRank, rewardClaimedAt, liked, taste] = await Promise.all([
+  const [orderInProgress, orderStats, totalRestaurants, weeklyRank, liked, taste] = await Promise.all([
     hasActiveOrder(profile.id),
     getOrderStats(profile.id),
     totalRestaurantsPromise,
     weeklyRankPromise,
-    getMilestoneRewardClaimedAt(profile.id),
     getLikedDishes(profile.id),
     getTasteProfile(profile.id),
   ]);
@@ -88,7 +86,6 @@ export default async function ProfilePage() {
             deliveredCount={orderStats.deliveredCount}
             restaurantsVisited={orderStats.restaurantsVisited}
             totalRestaurants={totalRestaurants}
-            rewardClaimedAt={rewardClaimedAt}
           />
 
           <LikedDishes dishes={liked} />

@@ -4,19 +4,12 @@ import {
   ChefHat,
   Compass,
   Crown,
-  Gift,
   Lock,
   Repeat,
   UtensilsCrossed,
   type LucideIcon,
 } from "lucide-react";
-import { SUPPORT_PHONE } from "@/lib/support";
 import { cn } from "@/lib/utils";
-
-/** "21 Sep", in IST. */
-export function formatDayMonth(iso: string) {
-  return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" });
-}
 
 export type MilestoneKey =
   | "first_bite"
@@ -108,10 +101,7 @@ export function getUnlockedMilestones(
   return MILESTONES.filter((m) => isUnlocked(m.progress(stats))).map((m) => m.key);
 }
 
-export function MilestoneBadges({
-  rewardClaimedAt,
-  ...stats
-}: MilestoneStats & { rewardClaimedAt: string | null }) {
+export function MilestoneBadges(stats: MilestoneStats) {
   const tiles = MILESTONES.map((m) => {
     const [current, target] = m.progress(stats);
     return { ...m, current, target, unlocked: isUnlocked([current, target]) };
@@ -153,100 +143,7 @@ export function MilestoneBadges({
           </li>
         ))}
       </ul>
-      <MilestoneReward
-        done={unlockedCount === tiles.length}
-        unlocked={unlockedCount}
-        total={tiles.length}
-        claimedAt={rewardClaimedAt}
-      />
     </section>
-  );
-}
-
-/*
- * The completion offer: every milestone unlocked earns one free
- * biryani of the student's choice. The student messages support to claim
- * it; an admin marks it handed over on /admin/users (milestone_rewards),
- * after which this card says so instead of offering the claim link. Until
- * then it's a blush card with a pine → amber "N to go" bar; once earned it
- * becomes the lit pine hero with a "Claim it on WhatsApp" pill.
- */
-function MilestoneReward({
-  done,
-  unlocked,
-  total,
-  claimedAt,
-}: {
-  done: boolean;
-  unlocked: number;
-  total: number;
-  claimedAt: string | null;
-}) {
-  const claimText = encodeURIComponent("Hi FoodHub! I've unlocked all the milestones — I'd like to claim my free biryani.");
-  const left = total - unlocked;
-  const lit = done && !claimedAt;
-  return (
-    <div
-      className={cn(
-        "mt-3 flex items-start gap-3 rounded-[1.5rem] px-4 py-3.5",
-        lit ? "surface-hero glow-hero bg-hero text-hero-foreground" : "bg-brand-soft text-brand-soft-foreground",
-      )}
-    >
-      <span
-        className={cn(
-          "mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full",
-          lit ? "bg-hero-foreground/10 text-hero-accent" : "bg-card text-primary",
-        )}
-      >
-        <Gift className="size-4.5" aria-hidden="true" />
-      </span>
-      <div className="min-w-0 text-sm">
-        {claimedAt ? (
-          <>
-            <p className="font-semibold">Free biryani claimed</p>
-            <p className="mt-0.5">
-              Handed over on {formatDayMonth(claimedAt)} — enjoy, and thanks for sticking with us.
-            </p>
-          </>
-        ) : done ? (
-          <>
-            <p className="font-semibold">You&apos;ve earned a free biryani!</p>
-            <p className="mt-0.5">Every milestone done — pick any biryani you like, on us.</p>
-            <a
-              href={`https://wa.me/${SUPPORT_PHONE.replace("+", "")}?text=${claimText}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="surface-primary glow-amber mt-3 inline-flex h-10 items-center rounded-full bg-primary px-4 font-semibold text-primary-foreground outline-none hover:brightness-110 focus-visible:ring-3 focus-visible:ring-hero-foreground/80"
-            >
-              Claim it on WhatsApp
-            </a>
-          </>
-        ) : (
-          <>
-            <p className="font-semibold">A free biryani is waiting</p>
-            <p className="mt-0.5">
-              Unlock all {MILESTONES.length} milestones and your next biryani is on us — any one you like.{" "}
-              <span className="font-semibold tabular-nums">
-                {left} to go.
-              </span>
-            </p>
-            <div
-              role="progressbar"
-              aria-valuenow={unlocked}
-              aria-valuemin={0}
-              aria-valuemax={total}
-              aria-label="Milestones toward the free biryani"
-              className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-card"
-            >
-              <div
-                className="progress-fill h-full w-(--fill) rounded-full bg-[linear-gradient(90deg,var(--brand-1),var(--brand-2),var(--brand-3))]"
-                style={{ "--fill": `${Math.round((unlocked / total) * 100)}%` } as CSSProperties}
-              />
-            </div>
-          </>
-        )}
-      </div>
-    </div>
   );
 }
 

@@ -224,7 +224,7 @@ html[data-splash-mode="lite"][data-splash-ran] .sp-lite {
   color: rgb(245 234 225 / 85%);
 }
 
-/* The logo tile (BrandLogo's look: the mark on fixed ivory). In the light
+/* The logo (BrandLogo's look: the round mark, transparent around it). In the light
    splash it sits centred; in both it ends flying onto the page's logo. */
 .sp-tile {
   position: absolute;
@@ -236,15 +236,14 @@ html[data-splash-mode="lite"][data-splash-ran] .sp-lite {
   display: grid;
   place-items: center;
   overflow: hidden;
-  border-radius: 1.75rem;
-  background: #f8f3e4;
+  border-radius: 50%;
   box-shadow: 0 0 0 1px rgb(255 255 255 / 16%), 0 18px 40px -14px rgb(212 165 55 / 55%);
   opacity: 0;
   will-change: transform, opacity;
 }
 .sp-tile img {
   display: block;
-  width: 92%;
+  width: 100%;
   height: auto;
 }
 .sp-tile-sheen {

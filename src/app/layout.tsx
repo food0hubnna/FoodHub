@@ -3,6 +3,7 @@ import { Cormorant_Garamond, Fraunces, Grey_Qo, Love_Light, Plus_Jakarta_Sans, S
 import { AppSplash } from "@/components/splash/app-splash";
 import { SPLASH_DISABLED } from "@/components/splash/config";
 import { SPLASH_INIT_SCRIPT } from "@/components/splash/init-script";
+import { SiteCredit } from "@/components/site-credit";
 import { TabBar } from "@/components/nav/tab-bar";
 import { Toaster } from "@/components/toast/toaster";
 import { SiteStatusWatch } from "@/components/site-status/site-status-watch";
@@ -136,6 +137,8 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <SiteStatusWatch />
         <StaleDeployGuard />
         {children}
+        {/* "~ Made with ♥ by Naga Adithya" at the foot of every page. */}
+        <SiteCredit />
         {/* The student bottom bar: here rather than in each page so it stays
             mounted and its pill can slide between tabs. It decides for
             itself where it shows (TabBar). */}

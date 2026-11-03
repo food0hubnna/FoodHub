@@ -4,21 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ViewTransition } from "react";
-import {
-  ArrowLeft,
-  Check,
-  ChefHat,
-  CookingPot,
-  MapPin,
-  Receipt,
-  Share2,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowLeft, MapPin, Share2 } from "lucide-react";
 import { BlurImage } from "@/components/blur-image";
 import { BrandLogo } from "@/components/brand-logo";
 import { CelebrationOverlay } from "@/components/celebration-overlay";
-import { DeliveryRoad } from "@/components/orders/delivery-road";
 import { NotifyMeCard } from "@/components/notifications/notify-me-card";
+import { RandomAnimation } from "@/components/random-animation";
 import { RateOrder } from "@/components/orders/rate-order";
 import { SupportButtons } from "@/components/support-buttons";
 import type { OrderDetail } from "@/lib/data/orders";
@@ -27,7 +18,7 @@ import { deliveryWindow, formatTime } from "@/lib/date";
 import { getDishPhoto } from "@/lib/data/dish-photos";
 import { formatRupees } from "@/lib/format";
 import { NAV_TRANSITION } from "@/lib/nav-transition";
-import { formatOrderNumber, orderTimeline, type TimelineStepState } from "@/lib/orders/status";
+import { formatOrderNumber } from "@/lib/orders/status";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "@/lib/toast/store";
 import { cn } from "@/lib/utils";
@@ -57,22 +48,16 @@ async function shareOrderToken(token: string) {
 // so it survives across restaurants/orders but not across devices.
 const CONFETTI_SHOWN_KEY = "foodhub.confetti-shown";
 
-// One icon per row of orderTimeline() (order/status.ts), by position —
-// "Order placed", "Pending confirmation" / "Restaurant confirmed", "Preparing & out for delivery".
-const STEP_ICONS: LucideIcon[] = [Receipt, ChefHat, CookingPot];
-
 /**
- * Renders the tracking page and keeps `status`/`updatedAt` live via
- * Supabase Realtime (subscribed to just this order's row — RLS still
- * governs whether this client is even allowed to receive it). Everything
- * else about the order (items, restaurant, total) never changes after
- * placement, so only these two fields need to be reactive.
+ * Renders the order page. Delivery times aren't constant, so a student sees
+ * only the promised time, never a kitchen stage or a progress line. `status`
+ * stays live via Supabase Realtime (subscribed to just this order's row — RLS
+ * still governs whether this client is even allowed to receive it) so the tick
+ * and the rating card appear the moment an admin marks it delivered.
  *
  * Falls back cleanly if Realtime never connects or the tab was in the
  * background: `initialOrder` came from the server component's own fetch,
- * so a plain page refresh always shows the true current status regardless
- * of whether the socket ever came up — the "Live" indicator is a bonus,
- * not something anything else here depends on.
+ * so a plain page refresh always shows the true current status.
  */
 export function OrderTracking({
   initialOrder,
@@ -94,9 +79,7 @@ export function OrderTracking({
   // overlay mid-moment.
   const [showSuccess] = useState(justPlaced);
   const [status, setStatus] = useState(initialOrder.status);
-  const [updatedAt, setUpdatedAt] = useState(initialOrder.updatedAt);
   const [deliveredAt, setDeliveredAt] = useState(initialOrder.deliveredAt);
-  const [live, setLive] = useState(false);
 
   useEffect(() => {
     // Strip ?placed=1 right away so a refresh doesn't replay the moment.
@@ -107,25 +90,23 @@ export function OrderTracking({
     const supabase = createClient();
     const channel = supabase
       .channel(`order-${initialOrder.id}`)
-      .on<{ status: OrderStatus; updated_at: string; delivered_at: string | null }>(
+      .on<{ status: OrderStatus; delivered_at: string | null }>(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "orders", filter: `id=eq.${initialOrder.id}` },
         (payload) => {
           setStatus(payload.new.status);
-          setUpdatedAt(payload.new.updated_at);
           setDeliveredAt(payload.new.delivered_at);
         },
       )
-      .subscribe((subscribeStatus) => setLive(subscribeStatus === "SUBSCRIBED"));
+      .subscribe();
 
     return () => {
-      setLive(false);
       supabase.removeChannel(channel);
     };
   }, [initialOrder.id]);
 
   const cancelled = status === "cancelled";
-  const steps = cancelled ? [] : orderTimeline(status);
+  const delivered = status === "delivered";
   const eta = deliveryWindow(initialOrder.createdAt);
   // Up to three distinct photos of what was ordered, for the ticket's header.
   const photos = initialOrder.items
@@ -138,7 +119,7 @@ export function OrderTracking({
     <>
       {showSuccess && (
         <CelebrationOverlay confettiOnceKey={CONFETTI_SHOWN_KEY}>
-          <BrandLogo className="animate-pop-in size-20 rounded-3xl" />
+          <BrandLogo className="animate-pop-in size-20" />
           <p className="animate-pop-in mt-5 font-heading text-2xl font-bold">Order placed!</p>
           <p className="mt-1 text-hero-foreground/85">Show this token at the gate</p>
           <p className="animate-pop-in mt-4 font-heading text-7xl font-bold tracking-tight text-hero-accent">
@@ -163,9 +144,8 @@ export function OrderTracking({
             Order {formatOrderNumber(initialOrder.dailyNumber)} from {initialOrder.restaurantName}
           </h1>
           {/* The token as a lit pine ticket stub: what you ordered (photos)
-              above the tear line, what you show at the gate below it, and —
-              while the order is live — the road from the kitchen to Main
-              Gate at its foot (DeliveryRoad, moved live by Realtime). */}
+              above the tear line, what you show at the gate below it, and the
+              promised delivery time at its foot. */}
           <div className="surface-hero glow-hero relative overflow-hidden rounded-[1.75rem] bg-hero text-hero-foreground">
             {photos.length > 0 && (
               <div
@@ -188,17 +168,9 @@ export function OrderTracking({
             )}
 
             <div className="px-6 pt-4 pb-5">
-              <div className="flex items-center justify-between gap-2">
-                <p className="min-w-0 truncate text-sm text-hero-foreground/85">
-                  {initialOrder.restaurantName} · {formatTime(initialOrder.createdAt)}
-                </p>
-                {live && (
-                  <span className="flex shrink-0 items-center gap-1.5 text-xs font-semibold text-hero-success">
-                    <span className="size-2.5 rounded-full bg-hero-success motion-safe:animate-pulse" aria-hidden="true" />
-                    Live
-                  </span>
-                )}
-              </div>
+              <p className="truncate text-sm text-hero-foreground/85">
+                {initialOrder.restaurantName} · {formatTime(initialOrder.createdAt)}
+              </p>
             </div>
 
             {/* Tear line: dashed rule with a notch cut out of each edge. */}
@@ -208,29 +180,21 @@ export function OrderTracking({
             </div>
 
             <div className="px-6 pt-5 pb-6">
-              <div className="flex items-end justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="text-label text-hero-accent">{cancelled ? "Order token" : "Show this token"}</p>
-                  <div className="mt-1 flex items-center gap-2">
-                    <p className={cn("font-heading text-6xl leading-none font-bold tracking-tight", cancelled && "line-through opacity-60")}>
-                      {formatOrderNumber(initialOrder.dailyNumber)}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => shareOrderToken(formatOrderNumber(initialOrder.dailyNumber))}
-                      aria-label="Share order token"
-                      className="flex size-9 shrink-0 items-center justify-center rounded-full bg-hero-foreground/10 outline-none hover:bg-hero-foreground/20 focus-visible:ring-2 focus-visible:ring-hero-foreground"
-                    >
-                      <Share2 className="size-4" />
-                    </button>
-                  </div>
-                </div>
-                {!cancelled && (
-                  <p className="shrink-0 text-right">
-                    <span className="block text-sm text-hero-foreground/85">{eta.lead}</span>
-                    <span className="block font-heading text-xl font-bold whitespace-nowrap">{eta.time}</span>
+              <div className="min-w-0">
+                <p className="text-label text-hero-accent">{cancelled ? "Order token" : "Show this token"}</p>
+                <div className="mt-1 flex items-center gap-2">
+                  <p className={cn("font-heading text-6xl leading-none font-bold tracking-tight", cancelled && "line-through opacity-60")}>
+                    {formatOrderNumber(initialOrder.dailyNumber)}
                   </p>
-                )}
+                  <button
+                    type="button"
+                    onClick={() => shareOrderToken(formatOrderNumber(initialOrder.dailyNumber))}
+                    aria-label="Share order token"
+                    className="flex size-9 shrink-0 items-center justify-center rounded-full bg-hero-foreground/10 outline-none hover:bg-hero-foreground/20 focus-visible:ring-2 focus-visible:ring-hero-foreground"
+                  >
+                    <Share2 className="size-4" />
+                  </button>
+                </div>
               </div>
               <p className="mt-5 flex items-center gap-2 rounded-full bg-hero-foreground/10 px-4 py-2.5 text-sm">
                 <MapPin className="size-4 shrink-0 text-hero-accent" aria-hidden="true" />
@@ -240,18 +204,36 @@ export function OrderTracking({
               </p>
             </div>
 
-            {/* Stays once delivered: the rider turns into a tick at the gate. */}
+            {/* The promise, nothing more: Handi beside the time, celebrating once delivered. */}
             {!cancelled && (
-              <div className="border-t border-hero-foreground/15 bg-hero-foreground/5 px-6 pt-4 pb-5">
-                <DeliveryRoad status={status} restaurantName={initialOrder.restaurantName} createdAt={initialOrder.createdAt} />
+              <div
+                aria-live="polite"
+                className="flex items-center gap-4 border-t border-hero-foreground/15 bg-hero-foreground/5 px-6 py-4"
+              >
+                <RandomAnimation
+                  key={delivered ? "delivered" : "order"}
+                  set={delivered ? "delivered" : "order"}
+                  sizes="112px"
+                  className="size-28 shrink-0 rounded-full [mask-image:radial-gradient(closest-side,#000_72%,transparent)]"
+                />
+                {delivered ? (
+                  <p className="font-heading text-xl font-bold">Delivered. Enjoy!</p>
+                ) : (
+                  <p className="min-w-0">
+                    <span className="block text-sm text-hero-foreground/85">
+                      {eta.lead === "Delivery by" ? "Your food will be delivered by" : eta.lead}
+                    </span>
+                    <span className="block font-heading text-xl font-bold">{eta.time}</span>
+                  </p>
+                )}
               </div>
             )}
           </div>
 
           {/* Still on its way: offer notifications instead of watching this page. */}
-          {!cancelled && status !== "delivered" && <NotifyMeCard />}
+          {!cancelled && !delivered && <NotifyMeCard />}
 
-          {cancelled ? (
+          {cancelled && (
             <div className="mt-6 rounded-2xl border border-destructive/30 bg-destructive/5 px-5 py-4">
               <p className="font-heading text-lg font-bold text-destructive">Order cancelled</p>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -259,48 +241,11 @@ export function OrderTracking({
                 FoodHub.
               </p>
             </div>
-          ) : (
-            <ol className="mt-6 flex flex-col rounded-[1.5rem] border bg-card px-5 pt-5 pb-0 shadow-card">
-              {steps.map((step, i) => (
-                <li key={step.label} className="flex gap-4">
-                  <div className="flex flex-col items-center">
-                    <StepDot state={step.state} Icon={STEP_ICONS[i] ?? Check} />
-                    {i < steps.length - 1 && (
-                      <span
-                        className={cn(
-                          "w-0.5 flex-1 rounded-full",
-                          // Done stretches are solid green; what's still to come is dashed.
-                          step.state === "done"
-                            ? "bg-success"
-                            : "bg-[repeating-linear-gradient(to_bottom,var(--border)_0_4px,transparent_4px_8px)]",
-                        )}
-                        aria-hidden="true"
-                      />
-                    )}
-                  </div>
-                  <div className={cn("pb-6", step.state === "upcoming" && "opacity-50")}>
-                    <p className={cn("font-semibold", step.state === "current" && "text-primary")}>
-                      {step.label}
-                    </p>
-                    {step.state === "current" && !step.label.startsWith("Preparing") && (
-                      <p className="text-sm text-muted-foreground">Waiting for the restaurant to confirm…</p>
-                    )}
-                    {i === 0 && <p className="text-sm text-muted-foreground">{formatTime(initialOrder.createdAt)}</p>}
-                    {step.state === "current" && step.label.startsWith("Preparing") && (
-                      <p className="text-sm text-muted-foreground">We&apos;ll call you when we reach the gate.</p>
-                    )}
-                    {i === steps.length - 1 && step.state === "done" && (
-                      <p className="text-sm text-muted-foreground">{formatTime(updatedAt)}</p>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ol>
           )}
 
           {/* Appears live the moment admin marks it delivered (status comes
               from the Realtime subscription above). */}
-          {status === "delivered" && (
+          {delivered && (
             <RateOrder
               orderId={initialOrder.id}
               restaurantName={initialOrder.restaurantName}
@@ -369,30 +314,5 @@ export function OrderTracking({
         </ViewTransition>
       </main>
     </>
-  );
-}
-
-function StepDot({ state, Icon }: { state: TimelineStepState; Icon: LucideIcon }) {
-  if (state === "done") {
-    return (
-      <span className="animate-pop-in flex size-9 shrink-0 items-center justify-center rounded-full bg-success text-success-foreground">
-        <Check className="size-4" />
-      </span>
-    );
-  }
-  if (state === "current") {
-    return (
-      <span className="relative flex size-9 shrink-0 items-center justify-center" aria-hidden="true">
-        <span className="animate-ping-slow absolute inset-0 rounded-full bg-primary/50" />
-        <span className="surface-primary glow-amber relative flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
-          <Icon className="size-4" />
-        </span>
-      </span>
-    );
-  }
-  return (
-    <span className="flex size-9 shrink-0 items-center justify-center rounded-full border-2 border-border text-muted-foreground">
-      <Icon className="size-4" />
-    </span>
   );
 }

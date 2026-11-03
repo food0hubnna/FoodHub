@@ -3,10 +3,9 @@
 // more. public.ordering_is_open() is the real enforcement (place_order()
 // refuses while Closed); this only drives what the UI says.
 //
-// Delivery promises still follow the old slot cut-offs (deliveryWindow() /
-// slotEndTime() in src/lib/date.ts: placed before 12:45 PM → by 1:30 PM,
-// before 6:00 PM → by 7:30 PM, before 7:00 PM → by 8:15 PM, later → "to be
-// confirmed").
+// Delivery promises follow fixed cut-offs (deliveryWindow() / slotEndTime() in
+// src/lib/date.ts: placed until 12:50 PM → by 2:00 PM, until 6:40 PM → by
+// 8:00 – 8:10 PM, later → "to be confirmed").
 
 export type OrderingMode = "open" | "closed";
 

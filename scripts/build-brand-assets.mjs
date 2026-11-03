@@ -1,9 +1,9 @@
 // Regenerates every brand asset from the source logo:
 //
-//   public/brand/logo-source.webp   the round FoodHub logo on white
+//   public/brand/FoodHub_logo_transparent.png   the round FoodHub logo, transparent outside
 //
 // Outputs:
-//   public/brand/mark.webp          logo with a transparent outside, for in-app tiles
+//   public/brand/mark.webp          cropped to the badge, for in-app use
 //   public/brand/mark.png           same, PNG, for the generated app icons
 //   src/app/favicon.ico             16/32/48/64 RGBA PNG frames
 //
@@ -12,18 +12,14 @@
 import sharp from "sharp";
 import { writeFile } from "node:fs/promises";
 
-const SRC = "public/brand/logo-source.webp";
+const SRC = "public/brand/FoodHub_logo_transparent.png";
 const SIZE = 512;
 
-// Crop to the badge, then cut the white away with a circle just inside its rim.
-const square = await sharp(SRC).trim({ background: "#ffffff", threshold: 18 }).resize(SIZE, SIZE, { fit: "fill" }).toBuffer();
-const circle = Buffer.from(
-  `<svg width="${SIZE}" height="${SIZE}"><circle cx="${SIZE / 2}" cy="${SIZE / 2}" r="${SIZE / 2 - 2}" fill="#fff"/></svg>`,
-);
-const mark = await sharp(square).ensureAlpha().composite([{ input: circle, blend: "dest-in" }]).png().toBuffer();
+// Crop away the transparent margin so the badge fills the square.
+const mark = await sharp(SRC).trim().resize(SIZE, SIZE, { fit: "fill" }).png({ compressionLevel: 9 }).toBuffer();
 
 await writeFile("public/brand/mark.png", mark);
-await sharp(mark).webp({ quality: 88 }).toFile("public/brand/mark.webp");
+await sharp(mark).webp({ quality: 88, alphaQuality: 100 }).toFile("public/brand/mark.webp");
 
 // ICO: a directory of PNG frames.
 const sizes = [16, 32, 48, 64];
