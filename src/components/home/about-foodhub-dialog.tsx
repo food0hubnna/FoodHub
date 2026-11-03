@@ -6,6 +6,7 @@ import { MessageCircle } from "lucide-react";
 import { HeroMotif } from "@/components/theme/hero-motif";
 import { WHATSAPP_GROUP_URL } from "@/lib/support";
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AboutCredits } from "./about-credits";
 
 /** Tapping the Home logo pops up a short "what is this app" card — mostly for first-time visitors poking around. */
 export function AboutFoodHubDialog({ children }: { children: ReactNode }) {
@@ -13,10 +14,10 @@ export function AboutFoodHubDialog({ children }: { children: ReactNode }) {
     <Dialog>
       <DialogTrigger
         aria-label="About FoodHub"
-        // The logo tile is the button: a ring in the
+        // The logo is the button: a ring in the
         // action colour, a slow glow and two ripples after the splash
         // (.logo-beacon), so it reads as tappable.
-        className="logo-beacon pressable relative shrink-0 rounded-2xl shadow-card ring-2 ring-primary/40 outline-none hover:ring-primary/70 focus-visible:ring-3 focus-visible:ring-ring/80"
+        className="logo-beacon pressable relative shrink-0 rounded-full shadow-card ring-2 ring-primary/40 outline-none hover:ring-primary/70 focus-visible:ring-3 focus-visible:ring-ring/80"
       >
         {children}
       </DialogTrigger>
@@ -28,7 +29,7 @@ export function AboutFoodHubDialog({ children }: { children: ReactNode }) {
         <div aria-hidden="true" className="surface-hero relative -mx-6 -mt-6 h-24 self-stretch overflow-hidden bg-hero">
           <HeroMotif className="-bottom-16 left-1/2 size-40 -translate-x-1/2" />
         </div>
-        <BrandLogo className="relative -mt-10 size-18 rounded-[1.4rem] shadow-raised ring-4 ring-card" />
+        <BrandLogo className="relative -mt-10 size-18 shadow-raised ring-4 ring-card" />
         <DialogTitle className="mt-3 text-title">FoodHub</DialogTitle>
         <p className="text-sm font-semibold text-primary">For the campus cravings</p>
         <DialogDescription className="mt-3 leading-relaxed">
@@ -52,6 +53,7 @@ export function AboutFoodHubDialog({ children }: { children: ReactNode }) {
           <MessageCircle className="size-5 text-success" aria-hidden="true" />
           Join our WhatsApp group
         </a>
+        <AboutCredits />
       </DialogContent>
     </Dialog>
   );

@@ -6,7 +6,7 @@ import { SITE_URL } from "@/lib/site";
 
 /*
  * The link-preview card for every page (WhatsApp, Instagram, Google):
- * the logo, the name and what FoodHub is on ivory, with real dishes
+ * the logo, the name and what FoodHub is on forest, with real dishes
  * on the right. Built once at build time — nothing here depends on the
  * request. Served at /opengraph-image, which src/proxy.ts lets through
  * signed out (link-preview bots never sign in).
@@ -22,7 +22,7 @@ export const contentType = "image/jpeg";
 
 const PINE = "#0f3b2a";
 const IVORY = "#f8f3e4";
-const AMBER = "#7f5c0e";
+const GOLD = "#e0b64a";
 
 const dataUri = (data: Buffer, type: string) => `data:${type};base64,${data.toString("base64")}`;
 
@@ -49,7 +49,7 @@ export default async function OpengraphImage() {
 
   const card = new ImageResponse(
     (
-      <div style={{ width: "100%", height: "100%", display: "flex", background: IVORY, color: PINE }}>
+      <div style={{ width: "100%", height: "100%", display: "flex", background: PINE, color: IVORY }}>
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 56px", width: 580 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={mark} alt="" width={150} height={150} />
@@ -63,8 +63,8 @@ export default async function OpengraphImage() {
               marginTop: 32,
               display: "flex",
               alignSelf: "flex-start",
-              background: AMBER,
-              color: "#fff8f0",
+              background: GOLD,
+              color: PINE,
               fontSize: 26,
               fontWeight: 700,
               padding: "12px 28px",

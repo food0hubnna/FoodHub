@@ -90,8 +90,7 @@ export async function getRestaurantMenuStats(): Promise<Record<string, Restauran
 
 /**
  * Number of restaurants on the platform — the "all of them" in the
- * profile's Campus Explorer badge (and the admin's "Free biryani earned"
- * check, via getUnlockedMilestones). Counts every row, NOT just `is_active`:
+ * profile's Campus Explorer badge. Counts every row, NOT just `is_active`:
  * campus ordering Closed switches every restaurant off (every night), and
  * counting only active ones made the target 0 — the badge showed "-5 more
  * restaurants" and re-locked overnight. A restaurant

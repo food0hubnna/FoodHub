@@ -7,13 +7,13 @@ const markData = await readFile(join(process.cwd(), "public/brand/mark.png"));
 const MARK_SRC = `data:image/png;base64,${markData.toString("base64")}`;
 /** Width / height of public/brand/mark.png. */
 const MARK_ASPECT = 1;
-/** The logo tile's cream, so the icon and the app read as one. */
+/** Brand forest: phones can't reliably show a transparent icon, so the logo sits on this. */
+const PINE = "#0f3b2a";
+/** For the admin icon's caption pill. */
 const IVORY = "#f8f3e4";
-/** Brand forest, for the admin icon's caption pill. */
-const INK = "#0f3b2a";
 
 /**
- * Shared FoodHub app-icon: the logo centred on cream — used by
+ * Shared FoodHub app-icon: the logo centred on forest — used by
  * every generated icon route (app/icons/*, app/apple-icon.tsx) so the
  * source image only ever needs updating in one place.
  */
@@ -50,7 +50,7 @@ export function appIconResponse({
           justifyContent: "center",
           overflow: "hidden",
           borderRadius,
-          background: IVORY,
+          background: PINE,
           flexDirection: "column",
         }}
       >
@@ -62,8 +62,8 @@ export function appIconResponse({
               marginTop: Math.round(height * 0.03),
               padding: `${Math.round(height * 0.012)}px ${Math.round(width * 0.06)}px`,
               borderRadius: 999,
-              background: INK,
-              color: IVORY,
+              background: IVORY,
+              color: PINE,
               fontSize: Math.round(height * 0.11),
               fontWeight: 700,
             }}

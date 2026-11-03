@@ -103,7 +103,7 @@ function EmptyCart({ onBrowse }: { onBrowse: () => void }) {
   return (
     <div className="px-8 pb-14">
       <EmptyState
-        art="plates"
+        art="handi"
         title="Nothing here yet"
         action={
           <Link

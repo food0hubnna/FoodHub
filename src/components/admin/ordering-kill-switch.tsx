@@ -27,7 +27,7 @@ const MODES: { mode: OrderingMode; label: string }[] = [
 const CONFIRM: Record<OrderingMode, { title: string; body: string; action: string }> = {
   open: {
     title: "Open ordering?",
-    body: "Students can order right away from every restaurant that's turned on. It stays open until you close it. Orders placed after 7:00 PM have no delivery slot — their ticket says delivery time to be confirmed.",
+    body: "Students can order right away from every restaurant that's turned on. It stays open until you close it. Orders placed after 6:40 PM have no delivery slot — their ticket says delivery time to be confirmed.",
     action: "Open ordering",
   },
   closed: {

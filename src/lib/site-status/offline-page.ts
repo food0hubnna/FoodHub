@@ -42,8 +42,8 @@ function maintenancePage(message: string | null) {
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px;background:#fbf4ee;background-image:radial-gradient(60% 45% at 85% 0%,rgba(192,122,53,.22),transparent 70%),radial-gradient(55% 45% at 0% 100%,rgba(145,73,85,.2),transparent 70%);color:#0f3b2a;font:16px/1.55 "Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 .card{position:relative;overflow:hidden;width:100%;max-width:420px;border-radius:28px;padding:32px 24px 28px;text-align:center;color:#fff7f1;background:radial-gradient(70% 60% at 100% 0%,rgba(192,122,53,.38),transparent 70%),radial-gradient(70% 60% at 0% 100%,rgba(145,73,85,.6),transparent 70%),linear-gradient(160deg,#69324f,#0f3b2a 55%,#0f3b2a);box-shadow:0 24px 60px -20px rgba(85,44,74,.55)}
-.tile{width:96px;height:96px;margin:0 auto 20px;border-radius:28px;background:#f8f3e4;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 6px rgba(255,247,241,.08),0 12px 30px -10px rgba(0,0,0,.4)}
-.tile img{width:88%;height:auto}
+.tile{width:96px;height:96px;margin:0 auto 20px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 6px rgba(255,247,241,.08),0 12px 30px -10px rgba(0,0,0,.4)}
+.tile img{width:100%;height:auto}
 .eyebrow{display:inline-flex;align-items:center;gap:8px;margin:0 0 12px;padding:6px 14px;border-radius:999px;background:rgba(255,247,241,.12);font-size:13px;font-weight:600;color:#ffd9a8}
 .dot{width:8px;height:8px;border-radius:50%;background:#ffd9a8}
 h1{margin:0 0 10px;font:700 30px/1.15 Fraunces,Georgia,"Times New Roman",serif}

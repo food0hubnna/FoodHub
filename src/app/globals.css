@@ -748,25 +748,6 @@
   }
   /* Bottom bar: the lit pill squashes as it lands on a tab, and the new
      tab's icon pops in with a little twist. */
-  /* The order road (DeliveryRoad): the rider bobs while it rides… */
-  .animate-scooter {
-    animation: scooter-bob 0.9s ease-in-out infinite alternate;
-  }
-  /* …the cooking pot simmers with a little hop now and then… */
-  .animate-cook {
-    animation: cook-jiggle 1.6s ease-in-out infinite;
-    transform-origin: 50% 90%;
-  }
-  /* …and its steam: each wisp rises and fades, a beat apart. */
-  .cook-steam {
-    animation: cook-steam 1.8s ease-out infinite;
-  }
-  .cook-steam:nth-child(2) {
-    animation-delay: -0.6s;
-  }
-  .cook-steam:nth-child(3) {
-    animation-delay: -1.2s;
-  }
   /* Unlocked milestone badges: a band of light sweeps across now and then,
      like a medal catching the light. The element needs overflow: hidden. */
   .animate-shine {
@@ -780,6 +761,37 @@
     translate: -110% 0;
     animation: shine-sweep 5.5s var(--ease-out-expo) 1s infinite;
     pointer-events: none;
+  }
+  /* SiteCredit (every page's footer): the heart gives a double beat now
+     and then; the developer's contact links rise in one after another. */
+  .credit-heart {
+    transform-origin: center;
+    animation: credit-heartbeat 2.6s var(--ease-out-expo) 1s infinite;
+  }
+  [data-open] > .contents > .dev-contact-item {
+    animation: dev-contact-rise 360ms var(--ease-out-expo) calc(var(--i) * 45ms) both;
+  }
+  @keyframes credit-heartbeat {
+    0%,
+    34%,
+    100% {
+      transform: scale(1);
+    }
+    8% {
+      transform: scale(1.28);
+    }
+    16% {
+      transform: scale(0.96);
+    }
+    24% {
+      transform: scale(1.18);
+    }
+  }
+  @keyframes dev-contact-rise {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
   }
   .motif-steam {
     animation: motif-steam 3.2s ease-in-out infinite;
@@ -1051,54 +1063,6 @@
   }
 }
 
-@keyframes cook-steam {
-  0% {
-    opacity: 0;
-    translate: 0 4px;
-  }
-  30% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    translate: 0 -7px;
-  }
-}
-
-@keyframes cook-jiggle {
-  0%,
-  100% {
-    transform: none;
-  }
-  10% {
-    transform: rotate(-6deg);
-  }
-  20% {
-    transform: rotate(5deg);
-  }
-  30% {
-    transform: rotate(-3deg);
-  }
-  40% {
-    transform: none;
-  }
-  70% {
-    transform: translateY(-2px) scale(1.04);
-  }
-  80% {
-    transform: none;
-  }
-}
-
-@keyframes scooter-bob {
-  from {
-    transform: translateY(1px) rotate(-3deg);
-  }
-  to {
-    transform: translateY(-2px) rotate(2deg);
-  }
-}
-
 @keyframes shine-sweep {
   0%,
   70% {
@@ -1108,18 +1072,6 @@
     translate: 110% 0;
   }
 }
-
-/* The route: the road's lane dashes, measured on the four scenes (scene
-   percentages, the rider's wheels on the lane). Segment times follow the
-   on-screen distance, slowing a little with distance (perspective). */
-
-/* Size with distance — linear in the road's depth (it narrows to a
-   horizon at ~45% of the scene) — and the turn at the bend (x flips
-   through 0, which reads as the scooter swinging round). */
-
-/* Speed lines only while moving. */
-
-/* A puff of dust as it pulls away from idle. */
 
 @keyframes motif-twinkle {
   0%,

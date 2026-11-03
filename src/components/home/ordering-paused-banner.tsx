@@ -1,20 +1,28 @@
+import { RandomAnimation } from "@/components/random-animation";
 import type { OrderingState } from "@/lib/ordering";
 
 /**
  * Shown on Home whenever students can't order (the admin's Open / Closed
- * switch is on Closed). Wording from describeOrdering().
+ * switch is on Closed), over Handi asleep for the night. Wording from
+ * describeOrdering().
  */
 export function OrderingPausedBanner({ ordering }: { ordering: OrderingState }) {
   return (
-    <div className="surface-hero mt-6 rounded-2xl bg-hero p-5 text-hero-foreground">
-      <p className="flex items-center gap-2 font-heading text-lg font-bold">
-        <span className="relative flex size-4 shrink-0" aria-hidden="true">
-          <span className="animate-ping-slow absolute inset-0 rounded-full bg-hero-accent/60" />
-          <span className="relative size-4 rounded-full bg-hero-accent" />
-        </span>
-        {ordering.headline}
-      </p>
-      <p className="mt-1.5 text-sm text-hero-foreground/85">{ordering.detail}</p>
+    <div className="surface-hero relative mt-6 min-h-[12.5rem] overflow-hidden rounded-[1.75rem] bg-hero p-5 text-hero-foreground">
+      <RandomAnimation
+        set="closed"
+        sizes="(max-width: 448px) 100vw, 448px"
+        className="absolute! inset-0"
+        mediaClassName="object-right"
+      />
+      <span
+        aria-hidden="true"
+        className="absolute inset-y-0 left-0 w-3/5 bg-linear-to-r from-hero via-hero/75 to-transparent"
+      />
+      <div className="relative z-10 max-w-[58%]">
+        <p className="font-heading text-lg leading-tight font-bold">{ordering.headline}</p>
+        <p className="mt-1.5 text-sm text-hero-foreground/85">{ordering.detail}</p>
+      </div>
     </div>
   );
 }

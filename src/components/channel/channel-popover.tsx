@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { getChannelSeen, getServerChannelSeen, markChannelSeen, subscribeChannelSeen } from "./channel-seen";
 
 const PERKS: { Icon: LucideIcon; text: string }[] = [
-  { Icon: BadgePercent, text: "Offers and free biryani news" },
+  { Icon: BadgePercent, text: "Offers and news" },
   { Icon: BellRing, text: "When we open and close" },
   { Icon: CookingPot, text: "New dishes and restaurants" },
 ];

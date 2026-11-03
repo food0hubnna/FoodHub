@@ -38,7 +38,7 @@ export function MarkAllDeliveredButton({
 }: {
   confirmedCount: number;
   eligibleCount: number;
-  /** "1:30 PM" — when the earliest still-waiting confirmed order's slot ends, or null if none are waiting. */
+  /** "2:00 PM" — when the earliest still-waiting confirmed order's slot ends, or null if none are waiting. */
   nextSlotEnd: string | null;
 }) {
   const router = useRouter();

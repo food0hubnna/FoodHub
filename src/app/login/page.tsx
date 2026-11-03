@@ -142,7 +142,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         <BrandLogo
           preload
           splashTarget
-          className="animate-pop-in -mt-10 size-20 rounded-3xl shadow-raised ring-4 ring-card"
+          className="animate-pop-in -mt-10 size-20 shadow-raised ring-4 ring-card"
         />
         {/* Pine: a lit bubble with the cloche, floating on the sheet's edge. */}
         <span
