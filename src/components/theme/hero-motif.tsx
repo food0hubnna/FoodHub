@@ -1,6 +1,7 @@
-import { PineMotif } from "@/components/theme/pine-motif";
+import { HandiSticker } from "@/components/handi/handi-says";
+import { cn } from "@/lib/utils";
 
-/** The illustration on a hero card. Decorative; position it with className. */
+/** Handi peeking onto a hero card. Decorative; position and size it with className. */
 export function HeroMotif({ className }: { className?: string }) {
-  return <PineMotif className={className} />;
+  return <HandiSticker pose="happy" sizes="160px" className={cn("absolute!", className)} />;
 }

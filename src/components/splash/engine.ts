@@ -137,7 +137,7 @@ export function runSplash(C: SplashRuntime): void {
     if (reduce) {
       // The resting state is the finished logo: the logo in the open
       // cloche (full), or the tile and its name (light).
-      const shown = lite ? [q("tile"), q("lite")] : [q("stage")];
+      const shown = lite ? [q("tile"), q("lite"), q("handi")] : [q("stage")];
       for (const el of shown) play(el, [{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: "ease-out" });
       setTimeout(() => exit(false), 220 + C.reducedHoldMs);
     } else if (lite) {
@@ -161,6 +161,16 @@ export function runSplash(C: SplashRuntime): void {
         { opacity: 1, transform: "none" },
       ],
       { duration: 460, delay: 60, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+    );
+    play(
+      q("handi"),
+      [
+        { opacity: 0, transform: "translateY(26px) scale(0.6) rotate(10deg)" },
+        { offset: 0.55, opacity: 1, transform: "translateY(-10px) scale(1.06, 0.96) rotate(-4deg)" },
+        { offset: 0.8, opacity: 1, transform: "translateY(2px) scale(0.98, 1.03)" },
+        { opacity: 1, transform: "none" },
+      ],
+      { duration: 620, delay: 280, easing: outExpo },
     );
     play(q("tile-sheen"), [{ translate: "-100% 0" }, { translate: "100% 0" }], {
       duration: 560,
@@ -370,6 +380,7 @@ export function runSplash(C: SplashRuntime): void {
         fill: "forwards",
       });
       q("lite").animate([{ opacity: 1 }, { opacity: 0 }], { duration: dur * 0.4, easing: "ease-in", fill: "forwards" });
+      q("handi").animate([{ opacity: 1 }, { opacity: 0 }], { duration: dur * 0.4, easing: "ease-in", fill: "forwards" });
     } else {
       const stage = q("stage");
       const H = q("hero").getBoundingClientRect();

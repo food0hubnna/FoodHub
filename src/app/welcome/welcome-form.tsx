@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { Loader2, MapPin } from "lucide-react";
-import { BrandLogo } from "@/components/brand-logo";
+import { HandiSays } from "@/components/handi/handi-says";
 import { ThemeIconToggle } from "@/components/theme/theme-icon-toggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,14 +34,12 @@ export function WelcomeForm({ defaultName }: { defaultName: string }) {
   return (
     <form action={formAction} className="flex flex-1 flex-col" noValidate>
       <div className="flex-1 px-6 pt-6 pb-8">
-        {/* The lit pine hero, as one header card. */}
-        <header className="animate-slide-up-in surface-hero glow-hero relative overflow-hidden rounded-[2rem] bg-hero p-5 text-hero-foreground">
-          <BrandLogo className="relative size-14 shadow-raised ring-2 ring-hero-foreground/15" />
-          <h1 className="relative mt-4 font-heading text-display font-bold">Almost there</h1>
-          <p className="relative mt-1.5 text-lg leading-snug text-hero-foreground/85">
-            We only ask once, then you go straight to the food.
+        <HandiSays pose="wave" preload>
+          <h1 className="font-heading text-title leading-tight font-bold">Hi, I&apos;m Handi!</h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            I only ask once, then it&apos;s straight to the food.
           </p>
-        </header>
+        </HandiSays>
 
         <div className="mt-8 flex flex-col gap-2.5">
           <Label htmlFor="fullName" className={eyebrow}>

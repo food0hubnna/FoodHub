@@ -14,14 +14,14 @@ export default function NotFound() {
       <LostTicket label="Token" token="#404" note="Nobody's coming to collect this one." />
       <h1 className="mt-10 font-heading text-headline font-bold">This page isn&apos;t on the menu</h1>
       <p className="mt-2 max-w-[20rem] text-muted-foreground">
-        The link might be old, or the order or restaurant it pointed to doesn&apos;t exist.
+        The link might be old, or the order or kitchen it pointed to doesn&apos;t exist.
       </p>
       <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
         <Link
           href="/"
           className="pressable surface-primary flex h-14 items-center justify-center glow-amber rounded-full bg-primary text-lg font-bold text-primary-foreground outline-none hover:brightness-95 focus-visible:ring-3 focus-visible:ring-ring/80"
         >
-          Back to restaurants
+          Back to kitchens
         </Link>
         <Link
           href="/orders"

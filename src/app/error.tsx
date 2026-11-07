@@ -53,7 +53,7 @@ export default function Error({
           href="/"
           className="pressable flex h-12 items-center justify-center rounded-2xl border bg-card font-semibold outline-none hover:bg-secondary focus-visible:ring-3 focus-visible:ring-ring/80"
         >
-          Back to restaurants
+          Back to kitchens
         </Link>
       </div>
     </main>

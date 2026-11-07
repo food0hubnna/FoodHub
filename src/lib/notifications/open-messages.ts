@@ -67,7 +67,7 @@ const MESSAGES: Record<Pool, OpenMessage[]> = {
 /** Sent instead while 10% / 20% off is on. `{pct}` becomes "10%" or "20%". */
 const OFFER_MESSAGES: OpenMessage[] = [
   { id: 101, title: "{pct} off. Yes, really.", body: "Ordering's open, grab it before it's gone." },
-  { id: 102, title: "We're open + {pct} off", body: "Discount's on in your cart. Order now." },
+  { id: 102, title: "We're open + {pct} off", body: "Discount's on in your bag. Order now." },
   { id: 103, title: "Cheaper biryani hours", body: "{pct} off right now. We're open." },
   { id: 104, title: "Your wallet will thank you", body: "{pct} off today. Order on FoodHub." },
   { id: 105, title: "Sale? Sale.", body: "{pct} off while it lasts. We're open." },

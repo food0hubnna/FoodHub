@@ -113,11 +113,11 @@ function EmptyCart({ onBrowse }: { onBrowse: () => void }) {
             onClick={onBrowse}
             className="pressable surface-primary glow-amber flex h-14 items-center rounded-full bg-primary px-8 text-lg font-bold text-primary-foreground outline-none hover:brightness-110 focus-visible:ring-3 focus-visible:ring-ring/80"
           >
-            Browse restaurants
+            Browse kitchens
           </Link>
         }
       >
-        Pick a restaurant and add a few dishes — most orders take under a minute.
+        Pick a kitchen and add a few dishes — most orders take under a minute.
       </EmptyState>
     </div>
   );

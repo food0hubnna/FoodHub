@@ -159,7 +159,7 @@ function SheetBody({
         </Group>
 
         {open.length > 1 && (
-          <Group legend="Restaurants">
+          <Group legend="Kitchens">
             {open.map((r) => {
               const on = draft.restaurants.includes(r.id);
               return (
