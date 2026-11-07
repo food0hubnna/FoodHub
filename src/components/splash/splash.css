@@ -214,8 +214,8 @@ html[data-splash-mode="lite"][data-splash-ran] .sp-lite {
   will-change: transform, opacity;
 }
 .sp-lite-name {
-  /* No web font this early on a slow connection: a system serif. */
-  font: 700 2rem/1 Georgia, "Times New Roman", serif;
+  /* No web font this early on a slow connection: the roundest system face there is. */
+  font: 800 2.1rem/1 ui-rounded, "Arial Rounded MT Bold", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   letter-spacing: -0.01em;
   color: #f6c27a;
 }
@@ -226,6 +226,16 @@ html[data-splash-mode="lite"][data-splash-ran] .sp-lite {
 
 /* The logo (BrandLogo's look: the round mark, transparent around it). In the light
    splash it sits centred; in both it ends flying onto the page's logo. */
+.sp-handi {
+  position: absolute;
+  left: calc(50% + 1.75rem);
+  top: calc(50% - 6.75rem);
+  width: 5.5rem;
+  height: auto;
+  opacity: 0;
+  z-index: 1;
+  will-change: transform, opacity;
+}
 .sp-tile {
   position: absolute;
   left: 50%;

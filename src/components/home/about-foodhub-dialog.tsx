@@ -34,7 +34,7 @@ export function AboutFoodHubDialog({ children }: { children: ReactNode }) {
         <p className="text-sm font-semibold text-primary">For the campus cravings</p>
         <DialogDescription className="mt-3 leading-relaxed">
           Food delivery built for VIT-AP campus — biryani, combo packs and family buckets from
-          real partner restaurants near you.
+          real partner kitchens near you.
         </DialogDescription>
         <p className="mt-3 text-sm text-muted-foreground">
           Cash on delivery · Pickup at VIT-AP Main Gate

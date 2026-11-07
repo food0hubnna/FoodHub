@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { Banknote, MapPin } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
-import { PassArt } from "@/components/theme/pass-art";
+import { RandomAnimation } from "@/components/random-animation";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 import { GoogleSignInButton } from "./google-sign-in-button";
-import "./login.css";
-import "./login.css";
 
 // The page search engines land on (everything else needs sign-in), so it
 // carries the full search title and a canonical address.
@@ -34,140 +31,46 @@ const STRUCTURED_DATA = JSON.stringify({
 }).replace(/</g, "\\u003c");
 
 /*
- * The first thing a student sees, so it leads with the real food rather
- * than an empty cream screen: a tilted mosaic of actual menu photos (one
- * or more from every partner kitchen) that fades into the page. Three
- * columns, the middle one dropped half a tile, so it reads as a spread
- * rather than a grid. The mosaic takes whatever height the text block
- * doesn't need (flex-1), so a tall phone gets more food, not a gap above
- * the button. Purely decorative — aria-hidden, empty alts.
- *
- * The motion: the
- * columns drift slowly, the middle one the other way; sparkles twinkle
- * over the food; a rose + amber glow lights where the sheet meets the
- * photos; and a lit pine bubble with the cloche (its lid lifting) floats
- * on the sheet's edge opposite the logo. `pine-login-*` in login.css.
+ * The first thing a student sees: the same arched card as the kitchens, with
+ * one of Handi's scenes in its window and the logo sitting on the window's
+ * foot. The window takes whatever height the text doesn't need, so a tall phone
+ * gets more of the scene, not a gap above the button.
  */
-const MOSAIC: string[][] = [
-  [
-    "/menu/dishes/mixed-chicken-biryani.jpg",
-    "/menu/dishes/chicken-lollipop.jpg",
-    "/menu/dishes/chicken-dum-biryani.jpg",
-    "/menu/dishes/combo-mixed.jpg",
-  ],
-  [
-    "/menu/dishes/chicken-fry-biryani.jpg",
-    "/menu/dishes/chicken-65.jpg",
-    "/menu/dishes/mughlai-biryani.jpg",
-    "/menu/dishes/a1-dum-biryani.jpg",
-  ],
-  [
-    "/menu/dishes/a1-fry-pieces-biryani.jpg",
-    "/menu/dishes/chicken-dum-biryani.jpg",
-    "/menu/dishes/bucket-mixed.jpg",
-    "/menu/dishes/chicken-lollipop-biryani.jpg",
-  ],
-];
-
-/** Sparkles over the mosaic: left, top, size, animation delay. */
-const SPARKLES: [string, string, number, string][] = [
-  ["14%", "22%", 18, "0s"],
-  ["58%", "12%", 14, "-0.9s"],
-  ["80%", "48%", 20, "-1.7s"],
-  ["36%", "62%", 12, "-2.3s"],
-];
-
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const { error } = await searchParams;
 
   return (
-    <main className="relative mx-auto flex w-full max-w-md flex-1 flex-col overflow-hidden">
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pt-4">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: STRUCTURED_DATA }} />
-      <div aria-hidden="true" className="relative min-h-44 flex-1 overflow-hidden">
-        <div className="pine-login only-pine absolute inset-0">
-          <div className="absolute -inset-x-12 -top-16 grid -rotate-6 grid-cols-3 gap-3">
-            {MOSAIC.map((column, c) => (
-              <div
-                key={c}
-                className={`pine-login-col flex flex-col gap-3${c === 1 ? " pine-login-col-down pt-16" : ""}`}
-                style={{ animationDelay: `${c * -4}s` }}
-              >
-                {column.map((src, row) => (
-                  <div
-                    key={src}
-                    className="relative aspect-[4/5] overflow-hidden rounded-3xl bg-secondary shadow-card"
-                  >
-                    {/* The top two rows are what's on screen at load (and hold
-                        the LCP image), so they skip lazy-loading. */}
-                    <Image
-                      src={src}
-                      alt=""
-                      fill
-                      sizes="(max-width: 448px) 36vw, 160px"
-                      loading={row < 2 ? "eager" : "lazy"}
-                      fetchPriority={row < 2 ? "high" : undefined}
-                      className="object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-          <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-hero/25" />
-          <div className="pine-login-glow absolute inset-x-0 bottom-0 h-3/5" />
-          {SPARKLES.map(([left, top, size, delay]) => (
-            <svg
-              key={`${left}-${top}`}
-              viewBox="0 0 20 20"
-              className="absolute text-white/85 drop-shadow"
-              style={{ left, top, width: size, height: size }}
-            >
-              <path
-                className="motif-twinkle"
-                style={{ animationDelay: delay }}
-                d="M10 0l2.6 7.4L20 10l-7.4 2.6L10 20l-2.6-7.4L0 10l7.4-2.6z"
-                fill="currentColor"
-              />
-            </svg>
-          ))}
-        </div>
-      </div>
-
-      {/* A solid sheet rising over the food, with the logo tile sitting on
-          its top edge. The headline only settles (a small rise) — never
-          fades from invisible: an element first painted at opacity 0 isn't
-          counted as Largest Contentful Paint, and Lighthouse then finds no
-          LCP on this page at all. */}
-      <div className="relative -mt-8 flex flex-col rounded-t-[2rem] bg-card px-6 pt-0 pb-[max(2rem,env(safe-area-inset-bottom))] shadow-[0_-14px_34px_-18px_var(--glow-hero)]">
+      <div className="arch-card glow-hero flex flex-1 flex-col border bg-card p-2">
+        <RandomAnimation
+          set="banner"
+          sizes="(min-width: 448px) 416px, 95vw"
+          className="arch min-h-52 flex-1 bg-hero ring-2 ring-amber/60"
+          mediaClassName="object-right"
+        />
         <BrandLogo
           preload
           splashTarget
-          className="animate-pop-in -mt-10 size-20 shadow-raised ring-4 ring-card"
+          className="animate-pop-in relative z-10 mx-auto -mt-10 size-20 shadow-raised ring-4 ring-card"
         />
-        {/* Pine: a lit bubble with the cloche, floating on the sheet's edge. */}
-        <span
-          aria-hidden="true"
-          className="only-pine surface-hero glow-hero absolute -top-8 right-6 size-16 rounded-full bg-hero ring-4 ring-card"
-        >
-          <span className="pine-login-bubble absolute inset-0">
-            <PassArt className="top-2 left-2" />
-          </span>
-        </span>
 
-        <h1 className="animate-settle mt-5 font-heading text-display font-bold">
-          For the campus
-          <br />
-          cravings.
+        <div className="px-4 pb-5 text-center">
+        {/* The headline only settles (a small rise) — never fades from
+            invisible: an element first painted at opacity 0 isn't counted as
+            Largest Contentful Paint. */}
+        <h1 className="animate-settle mt-3 font-heading text-display font-bold">
+          For the campus cravings
         </h1>
         <p
-          className="animate-slide-up-in mt-3 max-w-[22rem] text-base text-muted-foreground"
+          className="animate-slide-up-in mt-2 text-base text-muted-foreground"
           style={{ animationDelay: "130ms" }}
         >
-          Biryani, combos and family buckets from local kitchens — handed over at VIT-AP Main
-          Gate. Pay when you collect.
+          Hi, I&apos;m Handi! Biryani, combos and family buckets from local kitchens, handed over
+          at VIT-AP Main Gate. Pay when you collect.
         </p>
         <ul
-          className="animate-slide-up-in mt-4 flex flex-wrap gap-1.5 text-xs font-semibold"
+          className="animate-slide-up-in mt-3 flex flex-wrap justify-center gap-1.5 text-xs font-semibold"
           style={{ animationDelay: "150ms" }}
         >
           <li className="inline-flex items-center gap-1 rounded-full bg-brand-soft px-2.5 py-1 text-brand-soft-foreground">
@@ -181,7 +84,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         </ul>
 
         <div
-          className="animate-slide-up-in mt-7 w-full"
+          className="animate-slide-up-in mt-5 w-full"
           style={{ animationDelay: "170ms" }}
         >
           {error && (
@@ -204,6 +107,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
             </Link>
             .
           </p>
+        </div>
         </div>
       </div>
     </main>

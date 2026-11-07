@@ -180,7 +180,7 @@ export function RestaurantList({
   return (
     <>
       <label className="relative mt-6 block">
-        <span className="sr-only">Search dishes and restaurants</span>
+        <span className="sr-only">Search dishes and kitchens</span>
         <Search
           className="pointer-events-none absolute top-1/2 left-5 z-10 size-5 -translate-y-1/2 text-primary"
           aria-hidden="true"

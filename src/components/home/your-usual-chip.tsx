@@ -38,7 +38,7 @@ export function YourUsualChip({ usual }: { usual: UsualCart }) {
 
   function apply() {
     refillCart({ id: usual.restaurantId, name: usual.restaurantName }, usual.lines);
-    toast.success("Your usual is in the cart.");
+    toast.success("Your usual is in the bag.");
     router.push(`/restaurants/${usual.restaurantId}`, { transitionTypes: ["nav-forward"] });
   }
 
@@ -72,14 +72,14 @@ export function YourUsualChip({ usual }: { usual: UsualCart }) {
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-lg font-bold">Replace your cart?</AlertDialogTitle>
+            <AlertDialogTitle className="text-lg font-bold">Replace what&apos;s in the bag?</AlertDialogTitle>
             <AlertDialogDescription>
               The bag already has items in it. Refilling your usual from {usual.restaurantName}{" "}
               will replace what&apos;s there now.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep my cart</AlertDialogCancel>
+            <AlertDialogCancel>Keep my bag</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 setConfirmOpen(false);

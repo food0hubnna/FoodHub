@@ -46,7 +46,7 @@ body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:c
 .tile img{width:100%;height:auto}
 .eyebrow{display:inline-flex;align-items:center;gap:8px;margin:0 0 12px;padding:6px 14px;border-radius:999px;background:rgba(255,247,241,.12);font-size:13px;font-weight:600;color:#ffd9a8}
 .dot{width:8px;height:8px;border-radius:50%;background:#ffd9a8}
-h1{margin:0 0 10px;font:700 30px/1.15 Fraunces,Georgia,"Times New Roman",serif}
+h1{margin:0 0 10px;font:800 30px/1.15 ui-rounded,"Arial Rounded MT Bold",system-ui,sans-serif}
 p{margin:0;color:rgba(255,247,241,.88)}
 .note{margin-top:16px;padding:12px 14px;border-radius:16px;background:rgba(255,247,241,.1);color:#fff7f1;font-weight:500}
 .bar{margin:24px auto 0;height:6px;max-width:240px;border-radius:999px;background:rgba(255,247,241,.14);overflow:hidden}
