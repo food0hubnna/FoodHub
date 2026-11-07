@@ -1,7 +1,8 @@
 import { DEFAULT_PALETTE, PALETTE_GROUNDS } from "./palettes";
 
 // Runs before first paint (a raw inline <script> at the top of <body> in
-// layout.tsx) so a stored "dark" or "system"+OS-dark preference, and the
+// layout.tsx) so dark (the default, or a stored "dark" or "system"+OS-dark
+// preference), and the
 // chosen palette (data-palette), apply before first paint, with no flash
 // of the default theme. Must stay in sync with the defaults/logic in
 // ./store.ts (this can't import that module — it has to be a standalone
@@ -12,7 +13,7 @@ export const THEME_INIT_SCRIPT = `
   try {
     var root = document.documentElement;
     var v = localStorage.getItem("foodhub.theme");
-    var pref = (v === "light" || v === "dark" || v === "system") ? v : "system";
+    var pref = (v === "light" || v === "dark" || v === "system") ? v : "dark";
     var dark = pref === "dark" || (pref === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
     if (dark) {
       root.classList.add("dark");

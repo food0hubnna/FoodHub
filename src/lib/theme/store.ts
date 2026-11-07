@@ -8,9 +8,9 @@ import { DEFAULT_PALETTE, isPaletteId, PALETTE_GROUNDS, type PaletteId } from ".
 export type ThemePreference = "light" | "dark" | "system";
 
 const STORAGE_KEY = "foodhub.theme";
-// First-time visitors follow their OS's light/dark setting. Only an
-// explicit choice (the Appearance toggle) moves them off "system".
-const DEFAULT: ThemePreference = "system";
+// First-time visitors start in dark mode. Only an explicit choice (the
+// Appearance toggle) moves them to light or to following their OS.
+const DEFAULT: ThemePreference = "dark";
 
 function isValid(v: unknown): v is ThemePreference {
   return v === "light" || v === "dark" || v === "system";

@@ -65,7 +65,7 @@ export function RandomAnimation({
 
   return (
     <div aria-hidden="true" className={cn("relative overflow-hidden", className)}>
-      {clip && <Image src={clip.poster} alt="" fill sizes={sizes} className={cn("object-cover", mediaClassName)} />}
+      {clip && <Image src={clip.poster} alt="" fill quality={90} sizes={sizes} className={cn("object-cover", mediaClassName)} />}
       {src && (
         <video
           ref={videoRef}
