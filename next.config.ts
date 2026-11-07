@@ -37,6 +37,10 @@ const nextConfig: NextConfig = {
   // (buttons that silently did nothing until a refresh). See
   // node_modules/next/dist/docs/.../next-config-js/deploymentId.md.
   deploymentId: process.env.VERCEL_DEPLOYMENT_ID,
+  images: {
+    // 75 is the default; Handi's painted scenes use 90 so the brushwork stays crisp.
+    qualities: [75, 90],
+  },
   async headers() {
     return [
       {
