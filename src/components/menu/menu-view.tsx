@@ -155,6 +155,7 @@ export function MenuView({
     : byDiet;
 
   const chips = [{ key: ALL, name: "All" }, ...sections.map((s) => ({ key: sectionKey(s), name: sectionName(s) }))];
+  const hasFilters = sections.length > 1 || showDiet;
 
   return (
     <>
@@ -182,7 +183,7 @@ export function MenuView({
                   className="animate-pop-in h-10 w-full rounded-full border bg-card pr-3 pl-10 shadow-card outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/80 [&::-webkit-search-cancel-button]:hidden"
                 />
               </label>
-            ) : (
+            ) : hasFilters ? (
               <button
                 type="button"
                 onClick={() => setSearchOpen(true)}
@@ -190,6 +191,16 @@ export function MenuView({
                 className="flex size-10 shrink-0 items-center justify-center rounded-full border bg-card text-primary shadow-card outline-none hover:border-ring/50 focus-visible:ring-3 focus-visible:ring-ring/80"
               >
                 <Search className="size-4.5" />
+              </button>
+            ) : (
+              // No filter chips to sit beside: the search fills the row instead of a lone icon.
+              <button
+                type="button"
+                onClick={() => setSearchOpen(true)}
+                className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full border bg-card pr-3 pl-3.5 text-left text-muted-foreground shadow-card outline-none hover:border-ring/50 focus-visible:ring-3 focus-visible:ring-ring/80"
+              >
+                <Search className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                <span className="truncate">Search this menu…</span>
               </button>
             )}
 
@@ -204,7 +215,7 @@ export function MenuView({
               </button>
             )}
 
-            {!searchOpen && (sections.length > 1 || showDiet) && (
+            {!searchOpen && hasFilters && (
               <nav aria-label="Menu filters" className="-mr-6 min-w-0 flex-1">
                 <ul className="flex gap-2 overflow-x-auto pr-6 [scrollbar-width:none]">
                   {showDiet && (
