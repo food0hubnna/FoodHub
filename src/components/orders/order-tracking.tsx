@@ -110,7 +110,7 @@ export function OrderTracking({
 
   const cancelled = status === "cancelled";
   const delivered = status === "delivered";
-  const eta = deliveryWindow(initialOrder.createdAt);
+  const eta = deliveryWindow(initialOrder.createdAt, initialOrder.deliveryMinutes);
   return (
     <>
       {showSuccess && (

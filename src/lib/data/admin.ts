@@ -72,6 +72,8 @@ export type AdminOrder = {
   notes: string | null;
   restaurantId: string;
   restaurantName: string;
+  /** Express kitchen: due this many minutes after ordering (null = the normal delivery times). */
+  deliveryMinutes: number | null;
   userId: string;
   studentName: string;
   studentBanned: boolean;
@@ -95,7 +97,7 @@ type AdminOrderRow = {
   notes: string | null;
   user_id: string;
   restaurant_id: string;
-  restaurants: { name: string } | null;
+  restaurants: { name: string; delivery_minutes: number | null } | null;
   users: { full_name: string; is_banned: boolean } | null;
   order_items: { dish_name: string; quantity: number; subtotal: number; is_free: boolean; order_item_addons?: { addon_name: string }[] | null }[];
   discount_offer: OfferKey | null;
@@ -103,7 +105,7 @@ type AdminOrderRow = {
 };
 
 const ADMIN_ORDER_COLUMNS =
-  "id, status, total_amount, created_at, contact_phone, notes, user_id, restaurant_id, restaurants(name), users(full_name, is_banned), order_items(dish_name, quantity, subtotal, is_free, order_item_addons(addon_name)), daily_number, discount_offer, discount_amount";
+  "id, status, total_amount, created_at, contact_phone, notes, user_id, restaurant_id, restaurants(name, delivery_minutes), users(full_name, is_banned), order_items(dish_name, quantity, subtotal, is_free, order_item_addons(addon_name)), daily_number, discount_offer, discount_amount";
 
 function toAdminOrder(o: AdminOrderRow): AdminOrder {
   return {
@@ -116,6 +118,7 @@ function toAdminOrder(o: AdminOrderRow): AdminOrder {
     userId: o.user_id,
     restaurantId: o.restaurant_id,
     restaurantName: o.restaurants?.name ?? "Restaurant",
+    deliveryMinutes: o.restaurants?.delivery_minutes ?? null,
     studentName: o.users?.full_name ?? "Student",
     studentBanned: o.users?.is_banned ?? false,
     items: o.order_items.map((i) => ({
@@ -148,7 +151,7 @@ export async function getAdminOrderDetail(id: string): Promise<AdminOrderDetail 
     supabase
       .from("orders")
       .select(
-        "id, status, total_amount, created_at, delivered_at, contact_phone, notes, user_id, restaurant_id, daily_number, restaurants(name), users(full_name, is_banned, email, registration_number), order_items(id, dish_name, quantity, unit_price, addons_price, subtotal, is_free, order_item_addons(addon_name)), discount_offer, discount_amount",
+        "id, status, total_amount, created_at, delivered_at, contact_phone, notes, user_id, restaurant_id, daily_number, restaurants(name, delivery_minutes), users(full_name, is_banned, email, registration_number), order_items(id, dish_name, quantity, unit_price, addons_price, subtotal, is_free, order_item_addons(addon_name)), discount_offer, discount_amount",
       )
       .eq("id", id)
       .maybeSingle<
@@ -194,12 +197,16 @@ export async function getAdminOrderDetail(id: string): Promise<AdminOrderDetail 
  * the action would in fact deliver (and could leave the button disabled
  * while there was work to do).
  */
-export async function getConfirmedOrderTimes(): Promise<{ id: string; createdAt: string }[]> {
+export async function getConfirmedOrderTimes(): Promise<{ id: string; createdAt: string; deliveryMinutes: number | null }[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("orders").select("id, created_at").eq("status", "confirmed");
+  const { data, error } = await supabase
+    .from("orders")
+    .select("id, created_at, restaurants(delivery_minutes)")
+    .eq("status", "confirmed")
+    .returns<{ id: string; created_at: string; restaurants: { delivery_minutes: number | null } | null }[]>();
 
   if (error) throw error;
-  return (data ?? []).map((o) => ({ id: o.id, createdAt: o.created_at }));
+  return (data ?? []).map((o) => ({ id: o.id, createdAt: o.created_at, deliveryMinutes: o.restaurants?.delivery_minutes ?? null }));
 }
 
 /**
@@ -221,7 +228,7 @@ export async function getAdminOrders(now: Date = new Date()): Promise<AdminOrder
   if (error) throw error;
   return (data ?? [])
     .map(toAdminOrder)
-    .filter((o) => !isFinished(o.status) || !isPastDeliverySlot(o.createdAt, now));
+    .filter((o) => !isFinished(o.status) || !isPastDeliverySlot(o.createdAt, now, o.deliveryMinutes));
 }
 
 function isFinished(status: OrderStatus) {

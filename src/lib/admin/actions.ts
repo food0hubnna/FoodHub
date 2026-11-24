@@ -279,12 +279,13 @@ export async function markAllConfirmedDelivered(): Promise<
   const supabase = await createClient();
   const { data: confirmed, error: fetchError } = await supabase
     .from("orders")
-    .select("id, created_at")
-    .eq("status", "confirmed");
+    .select("id, created_at, restaurants(delivery_minutes)")
+    .eq("status", "confirmed")
+    .returns<{ id: string; created_at: string; restaurants: { delivery_minutes: number | null } | null }[]>();
   if (fetchError) return { ok: false, error: "Couldn't load confirmed orders. Please try again." };
 
   const eligibleIds = (confirmed ?? [])
-    .filter((o) => isPastDeliverySlot(o.created_at))
+    .filter((o) => isPastDeliverySlot(o.created_at, new Date(), o.restaurants?.delivery_minutes))
     .map((o) => o.id);
   if (eligibleIds.length === 0) {
     return { ok: false, error: "No confirmed orders have passed their delivery slot yet." };

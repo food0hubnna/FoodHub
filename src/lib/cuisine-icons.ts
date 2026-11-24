@@ -7,6 +7,7 @@ import {
   CookingPot,
   Flame,
   LayoutGrid,
+  Sandwich,
   Soup,
   Sparkles,
   Utensils,
@@ -23,6 +24,7 @@ import {
 // rather than guessing.
 const RULES: [string, LucideIcon][] = [
   ["biryani", CookingPot],
+  ["shawarma", Sandwich],
   ["curr", Soup],
   ["tandoori", Flame],
   ["starter", UtensilsCrossed],

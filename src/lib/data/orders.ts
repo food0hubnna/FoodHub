@@ -16,6 +16,8 @@ export type OrderSummary = {
   createdAt: string;
   restaurantId: string;
   restaurantName: string;
+  /** Express kitchen: due this many minutes after ordering (null = the normal delivery times). */
+  deliveryMinutes: number | null;
   itemCount: number;
   /** e.g. "2× Chicken Biryani, Veg Manchurian" — for the orders list, not the detail page. */
   itemsSummary: string;
@@ -80,6 +82,8 @@ export type OrderDetail = {
   notes: string | null;
   restaurantId: string;
   restaurantName: string;
+  /** Express kitchen: due this many minutes after ordering (null = the normal delivery times). */
+  deliveryMinutes: number | null;
   restaurantPhone: string;
   items: OrderItem[];
   dailyNumber: number;
@@ -94,7 +98,7 @@ type OrderSummaryRow = {
   total_amount: number;
   created_at: string;
   restaurant_id: string;
-  restaurants: { name: string } | null;
+  restaurants: { name: string; delivery_minutes: number | null } | null;
   order_items: ({ dish_name: string; quantity: number } & ItemAddonRows)[];
   daily_number: number;
   delivered_at: string | null;
@@ -120,7 +124,7 @@ export async function getOrderHistory(userId: string): Promise<OrderSummary[]> {
   const { data, error } = await supabase
     .from("orders")
     .select(
-      "id, status, total_amount, created_at, restaurant_id, restaurants(name), order_items(dish_name, quantity, order_item_addons(addon_name)), daily_number, delivered_at, order_reviews(order_id)",
+      "id, status, total_amount, created_at, restaurant_id, restaurants(name, delivery_minutes), order_items(dish_name, quantity, order_item_addons(addon_name)), daily_number, delivered_at, order_reviews(order_id)",
     )
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
@@ -135,6 +139,7 @@ export async function getOrderHistory(userId: string): Promise<OrderSummary[]> {
     createdAt: o.created_at,
     restaurantId: o.restaurant_id,
     restaurantName: o.restaurants?.name ?? "Restaurant",
+    deliveryMinutes: o.restaurants?.delivery_minutes ?? null,
     itemCount: o.order_items.reduce((sum, item) => sum + item.quantity, 0),
     itemsSummary: summarizeItems(o.order_items),
     dishNames: o.order_items.map((i) => i.dish_name),
@@ -198,7 +203,7 @@ type OrderDetailRow = {
   contact_phone: string;
   notes: string | null;
   restaurant_id: string;
-  restaurants: { name: string; phone: string } | null;
+  restaurants: { name: string; phone: string; delivery_minutes: number | null } | null;
   order_items: ({ id: string; dish_name: string; unit_price: number; addons_price: number; quantity: number; subtotal: number; is_free: boolean } & ItemAddonRows)[];
   daily_number: number;
   discount_offer: OfferKey | null;
@@ -357,7 +362,7 @@ export const getOrder = cache(async function getOrder(
   const { data, error } = await supabase
     .from("orders")
     .select(
-      "id, status, total_amount, created_at, updated_at, delivered_at, contact_phone, notes, restaurant_id, restaurants(name, phone), order_items(id, dish_name, unit_price, addons_price, quantity, subtotal, is_free, order_item_addons(addon_name)), daily_number, discount_offer, discount_amount, order_reviews(note, created_at, order_item_ratings(order_item_id, rating))",
+      "id, status, total_amount, created_at, updated_at, delivered_at, contact_phone, notes, restaurant_id, restaurants(name, phone, delivery_minutes), order_items(id, dish_name, unit_price, addons_price, quantity, subtotal, is_free, order_item_addons(addon_name)), daily_number, discount_offer, discount_amount, order_reviews(note, created_at, order_item_ratings(order_item_id, rating))",
     )
     .eq("id", id)
     .eq("user_id", userId)
@@ -378,6 +383,7 @@ export const getOrder = cache(async function getOrder(
     notes: data.notes,
     restaurantId: data.restaurant_id,
     restaurantName: data.restaurants?.name ?? "Restaurant",
+    deliveryMinutes: data.restaurants?.delivery_minutes ?? null,
     restaurantPhone: data.restaurants?.phone ?? "",
     items: data.order_items.map((i) => ({
       id: i.id,

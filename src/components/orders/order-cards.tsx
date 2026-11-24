@@ -35,7 +35,7 @@ function OrderPlate({ order, className }: { order: OrderSummary; className?: str
 
 /** An order still coming: Handi with the food, the promised time and the token. */
 export function ActiveOrderCard({ order }: { order: OrderSummary }) {
-  const eta = deliveryWindow(order.createdAt);
+  const eta = deliveryWindow(order.createdAt, order.deliveryMinutes);
   return (
     <Link
       href={`/orders/${order.id}`}

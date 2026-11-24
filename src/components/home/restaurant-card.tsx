@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ExpressBadge } from "@/components/express-badge";
 import { HangingSign } from "@/components/handi/hanging-sign";
 import type { CardSlide } from "@/lib/data/dish-photos";
 import type { RestaurantMenuStats } from "@/lib/data/restaurants";
@@ -80,6 +81,7 @@ export function RestaurantCard({
         {restaurant.cuisine_tags.length > 0 && (
           <p className="mt-1 text-xs font-semibold text-brand-soft-foreground">{restaurant.cuisine_tags.join(" · ")}</p>
         )}
+        {restaurant.delivery_minutes && <ExpressBadge minutes={restaurant.delivery_minutes} className="mt-2" />}
       </div>
 
       <div className="mt-3 flex items-center justify-between gap-3 border-t border-dashed px-3 pt-2.5 pb-1.5 text-sm">

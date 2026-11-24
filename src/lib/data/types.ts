@@ -7,6 +7,8 @@ export type Restaurant = {
   description: string | null;
   cuisine_tags: string[];
   is_active: boolean;
+  /** Express kitchen: delivered within this many minutes of ordering. Null = the normal delivery times. */
+  delivery_minutes: number | null;
 };
 
 export type DishCategory = {

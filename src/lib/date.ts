@@ -55,8 +55,12 @@ const NIGHT_CUTOFF = 18 * 60 + 40;
  * Split into a lead-in and the time so the UI can keep the time on one line;
  * spaces inside `time` are no-break. An order placed after the last cut-off
  * has no slot: "to be confirmed".
+ *
+ * An express kitchen (`expressMinutes`, restaurants.delivery_minutes) skips
+ * the slots: its order is due that many minutes after it was placed.
  */
-export function deliveryWindow(iso: string): { lead: string; time: string } {
+export function deliveryWindow(iso: string, expressMinutes?: number | null): { lead: string; time: string } {
+  if (expressMinutes) return { lead: "Delivery by", time: time(new Date(new Date(iso).getTime() + expressMinutes * 60_000)).replace(/ /g, " ") };
   const [h, m] = hourMinuteFmt.format(new Date(iso)).split(":").map(Number);
   const minutesOfDay = h * 60 + m;
 
@@ -71,9 +75,11 @@ export function deliveryWindow(iso: string): { lead: string; time: string } {
  * real Date, so admin bulk actions can gate on "has this slot actually
  * ended". A slot-less order (placed after 6:40 PM) counts as ended as
  * soon as it's placed, so an admin can mark it delivered whenever.
+ * An express kitchen's order is due `expressMinutes` after it was placed.
  */
-export function slotEndTime(iso: string): Date {
+export function slotEndTime(iso: string, expressMinutes?: number | null): Date {
   const placed = new Date(iso);
+  if (expressMinutes) return new Date(placed.getTime() + expressMinutes * 60_000);
   const [h, m] = hourMinuteFmt.format(placed).split(":").map(Number);
   const minutesOfDay = h * 60 + m;
 
@@ -87,8 +93,13 @@ export function slotEndTime(iso: string): Date {
 }
 
 /** True once an order's delivery slot has actually ended (now >= slot end). */
-export function isPastDeliverySlot(iso: string, now: Date = new Date()): boolean {
-  return now.getTime() >= slotEndTime(iso).getTime();
+export function isPastDeliverySlot(iso: string, now: Date = new Date(), expressMinutes?: number | null): boolean {
+  return now.getTime() >= slotEndTime(iso, expressMinutes).getTime();
+}
+
+/** What an express kitchen promises before ordering: "Delivery within 40 min". */
+export function expressWindow(minutes: number): { lead: string; time: string } {
+  return { lead: "Delivery within", time: `${minutes} min` };
 }
 
 const weekdayFmt = new Intl.DateTimeFormat("en-US", { timeZone: IST, weekday: "long" });

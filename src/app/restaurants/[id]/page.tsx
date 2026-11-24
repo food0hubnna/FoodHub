@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ViewTransition } from "react";
 import { ArrowLeft } from "lucide-react";
 import { BlurImage } from "@/components/blur-image";
+import { ExpressBadge } from "@/components/express-badge";
 import { HangingSign } from "@/components/handi/hanging-sign";
 import { MenuProgress } from "@/components/menu/menu-progress";
 import { MenuView } from "@/components/menu/menu-view";
@@ -114,6 +115,7 @@ export default async function RestaurantPage({ params, searchParams }: PageProps
               <p className="mt-1 text-xs font-semibold text-brand-soft-foreground">
                 {[...restaurant.cuisine_tags, "Free to Main Gate"].join(" · ")}
               </p>
+              {restaurant.delivery_minutes && <ExpressBadge minutes={restaurant.delivery_minutes} className="mt-2" />}
               <MenuProgress restaurantName={restaurant.name} tried={dishesTried} total={totalDishes} />
               {!active && (
                 <p className="mt-4 rounded-2xl bg-secondary px-4 py-3 text-sm">

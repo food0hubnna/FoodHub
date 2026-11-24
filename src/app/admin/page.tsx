@@ -27,14 +27,14 @@ export default async function AdminPage() {
 
   // Counted over every confirmed order (not just today's list below) —
   // the same set markAllConfirmedDelivered() acts on.
-  const eligibleForDelivery = confirmedAll.filter((o) => isPastDeliverySlot(o.createdAt)).length;
-  const waiting = confirmedAll.filter((o) => !isPastDeliverySlot(o.createdAt));
+  const eligibleForDelivery = confirmedAll.filter((o) => isPastDeliverySlot(o.createdAt, undefined, o.deliveryMinutes)).length;
+  const waiting = confirmedAll.filter((o) => !isPastDeliverySlot(o.createdAt, undefined, o.deliveryMinutes));
   // When the next finished order's slot ends and it should move to history.
   const nextDropOff = orders
     .filter((o) => o.status === "delivered" || o.status === "cancelled")
-    .map((o) => slotEndTime(o.createdAt).getTime());
+    .map((o) => slotEndTime(o.createdAt, o.deliveryMinutes).getTime());
   const nextSlotEnd = waiting.length
-    ? formatTime(new Date(Math.min(...waiting.map((o) => slotEndTime(o.createdAt).getTime()))).toISOString())
+    ? formatTime(new Date(Math.min(...waiting.map((o) => slotEndTime(o.createdAt, o.deliveryMinutes).getTime()))).toISOString())
     : null;
 
   return (
