@@ -27,9 +27,9 @@ export const DISH_PHOTOS: Record<string, Record<string, string>> = {
     "Mixed Chicken Biryani": `${DISHES}/mixed-chicken-biryani.jpg`,
   },
   "A1 Biryani Point": {
-    "A1 Dum Biryani": `${DISHES}/a1-dum-biryani.jpg`,
-    "A1 Fry Pieces Biryani": `${DISHES}/a1-fry-pieces-biryani.jpg`,
-    "A1 Mixed Biryani": `${DISHES}/mixed-chicken-biryani.jpg`,
+    "Chicken Dum Biryani": `${DISHES}/a1-dum-biryani.jpg`,
+    "Chicken Fry Pieces Biryani": `${DISHES}/a1-fry-pieces-biryani.jpg`,
+    "Mixed Biryani": `${DISHES}/mixed-chicken-biryani.jpg`,
   },
   "Spice Magic Biryanis": {
     "Chicken Dum Mini": `${DISHES}/chicken-dum-biryani.jpg`,
@@ -39,6 +39,7 @@ export const DISH_PHOTOS: Record<string, Record<string, string>> = {
     "Chicken Mixed": `${DISHES}/mixed-chicken-biryani.jpg`,
     "Chicken Moghlai Biryani": `${DISHES}/mughlai-biryani.jpg`,
     "Chicken 65 Biryani": `${DISHES}/chicken-65-biryani.jpg`,
+    "Chilli Chicken Biryani": `${DISHES}/chilli-chicken-biryani.jpg`,
     "Chicken Dum Combo Pack": `${DISHES}/combo-dum.jpg`,
     "Chicken Fry Combo Pack": `${DISHES}/combo-fry.jpg`,
     "Chicken Mixed Combo Pack": `${DISHES}/combo-mixed.jpg`,
@@ -98,7 +99,7 @@ export function getDishPhoto(restaurantName: string, dishName: string): string |
  */
 const SIGNATURE_DISHES: Record<string, string[]> = {
   "Al Madina": ["Chicken Dum Biryani", "Chicken Fry Biryani"],
-  "A1 Biryani Point": ["A1 Dum Biryani", "A1 Fry Pieces Biryani"],
+  "A1 Biryani Point": ["Chicken Dum Biryani", "Chicken Fry Pieces Biryani"],
   "Spice Magic Biryanis": ["Chicken Fry Combo Pack", "Chicken Dum Bucket", "Chicken 65 Biryani"],
   "Shawarma Hub": ["Chicken Cheese Shawarma", "Peri-Peri Chicken Shawarma", "Chicken Shawarma"],
 };
