@@ -16,6 +16,7 @@ export const RESTAURANT_COVER_PHOTOS: Record<string, string> = {
   "Al Madina": `${COVERS}/al-madina.jpg`,
   "A1 Biryani Point": `${COVERS}/a1-biryani-point.jpg`,
   "Spice Magic Biryanis": `${COVERS}/spice-magic.jpg`,
+  "Shawarma Hub": `${COVERS}/shawarma-hub.jpg`,
 };
 
 /** Restaurant name -> { dish name -> thumbnail photo }. */
@@ -44,6 +45,13 @@ export const DISH_PHOTOS: Record<string, Record<string, string>> = {
     "Chicken Dum Bucket": `${DISHES}/bucket-dum.jpg`,
     "Chicken Fry Bucket": `${DISHES}/bucket-fry.jpg`,
     "Chicken Mixed Bucket": `${DISHES}/bucket-mixed.jpg`,
+  },
+  "Shawarma Hub": {
+    "Chicken Shawarma": `${DISHES}/shawarma-chicken.jpg`,
+    "Chicken Special Shawarma": `${DISHES}/shawarma-chicken-special.jpg`,
+    "Peri-Peri Chicken Shawarma": `${DISHES}/shawarma-peri-peri.jpg`,
+    "Chicken Cheese Shawarma": `${DISHES}/shawarma-chicken-cheese.jpg`,
+    "Double Chicken Shawarma": `${DISHES}/shawarma-double-chicken.jpg`,
   },
 };
 
@@ -92,6 +100,7 @@ const SIGNATURE_DISHES: Record<string, string[]> = {
   "Al Madina": ["Chicken Dum Biryani", "Chicken Fry Biryani"],
   "A1 Biryani Point": ["A1 Dum Biryani", "A1 Fry Pieces Biryani"],
   "Spice Magic Biryanis": ["Chicken Fry Combo Pack", "Chicken Dum Bucket", "Chicken 65 Biryani"],
+  "Shawarma Hub": ["Chicken Cheese Shawarma", "Peri-Peri Chicken Shawarma", "Chicken Shawarma"],
 };
 
 /** A restaurant's hand-picked signature dishes (by name) — also fill Home's "Handi's picks" row. */
