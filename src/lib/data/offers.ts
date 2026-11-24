@@ -34,9 +34,10 @@ export const getOffers = cache(async (): Promise<OffersState> => {
   const [{ data, error }, { data: exclusions }] = await Promise.all([
     supabase
     .from("app_settings")
-    .select("offer_pct10, offer_pct20, offer_biryani, offers_restaurant_id, restaurants(name)")
+    .select("offer_pct5, offer_pct10, offer_pct20, offer_biryani, offers_restaurant_id, restaurants(name)")
     .eq("id", true)
     .single<{
+      offer_pct5: boolean;
       offer_pct10: boolean;
       offer_pct20: boolean;
       offer_biryani: boolean;
@@ -51,6 +52,7 @@ export const getOffers = cache(async (): Promise<OffersState> => {
   ) as OffersState["excluded"];
 
   const flags: Record<OfferKey, boolean> = {
+    pct5: data.offer_pct5,
     pct10: data.offer_pct10,
     pct20: data.offer_pct20,
     biryani: data.offer_biryani,

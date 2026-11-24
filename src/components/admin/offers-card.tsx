@@ -44,6 +44,7 @@ export function OffersCard({
   const [, startTransition] = useTransition();
 
   const detail: Record<OfferKey, string> = {
+    pct5: "Off the whole order, at the restaurants switched on below",
     pct10: "Off the whole order, at the restaurants switched on below",
     pct20: "Off the whole order, at the restaurants switched on below",
     biryani: `${restaurantName} only. Students pick which single biryani(s) they get free`,

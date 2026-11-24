@@ -97,6 +97,16 @@ export function isPastDeliverySlot(iso: string, now: Date = new Date(), expressM
   return now.getTime() >= slotEndTime(iso, expressMinutes).getTime();
 }
 
+/**
+ * When an order is due, as an ISO time: its delivery slot's end, or an
+ * express kitchen's N minutes. Null for an order placed after the last
+ * cut-off ("to be confirmed") — it has no time yet.
+ */
+export function deliveryDue(iso: string, expressMinutes?: number | null): string | null {
+  if (!expressMinutes && deliveryWindow(iso).time === "to be confirmed") return null;
+  return slotEndTime(iso, expressMinutes).toISOString();
+}
+
 /** What an express kitchen promises before ordering: "Delivery within 40 min". */
 export function expressWindow(minutes: number): { lead: string; time: string } {
   return { lead: "Delivery within", time: `${minutes} min` };

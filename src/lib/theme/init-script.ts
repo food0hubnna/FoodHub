@@ -12,7 +12,11 @@ export const THEME_INIT_SCRIPT = `
 (function () {
   try {
     var root = document.documentElement;
-    var v = localStorage.getItem("foodhub.theme");
+    // The admin keeps its own Light / Dark / System choice, apart from the
+    // student app's on the same phone. Both start dark.
+    var path = location.pathname;
+    var admin = path === "/admin" || path.indexOf("/admin/") === 0;
+    var v = localStorage.getItem(admin ? "foodhub.admin-theme" : "foodhub.theme");
     var pref = (v === "light" || v === "dark" || v === "system") ? v : "dark";
     var dark = pref === "dark" || (pref === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
     if (dark) {

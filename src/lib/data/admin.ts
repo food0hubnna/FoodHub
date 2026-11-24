@@ -1,26 +1,28 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import { isPastDeliverySlot, startOfTodayIST } from "@/lib/date";
+import { fetchAllRows } from "@/lib/supabase/fetch-all";
+import { startOfTodayIST } from "@/lib/date";
 import type { OfferKey } from "@/lib/offers";
 import { isUuid } from "@/lib/ids";
 import type { OrderStatus } from "./types";
 
 export type AdminRestaurant = { id: string; name: string; is_active: boolean };
 
-/** Every restaurant, for the open/closed toggle list and the vendor stat. */
+/** Every restaurant still on the app (not removed), for the open/closed toggle list, offers and the vendor stat. */
 export async function getAdminRestaurants(): Promise<AdminRestaurant[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("restaurants")
     .select("id, name, is_active")
+    .is("archived_at", null)
     .order("name");
 
   if (error) throw error;
   return data;
 }
 
-export type OrderCounts = { total: number; confirmed: number; completed: number };
+export type OrderCounts = { total: number; confirmed: number; completed: number; cancelled: number };
 
 /**
  * Order counts for the stat cards. Counted rather than fetched in full, so
@@ -44,23 +46,52 @@ export async function getOrderCounts(since?: Date): Promise<OrderCounts> {
     .from("orders")
     .select("id", { count: "exact", head: true })
     .eq("status", "delivered");
+  let cancelledQuery = supabase
+    .from("orders")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "cancelled");
   if (sinceIso) {
     totalQuery = totalQuery.gte("created_at", sinceIso);
     confirmedQuery = confirmedQuery.gte("created_at", sinceIso);
     completedQuery = completedQuery.gte("created_at", sinceIso);
+    cancelledQuery = cancelledQuery.gte("created_at", sinceIso);
   }
 
-  const [total, confirmed, completed] = await Promise.all([totalQuery, confirmedQuery, completedQuery]);
+  const [total, confirmed, completed, cancelled] = await Promise.all([
+    totalQuery,
+    confirmedQuery,
+    completedQuery,
+    cancelledQuery,
+  ]);
 
   if (total.error) throw total.error;
   if (confirmed.error) throw confirmed.error;
   if (completed.error) throw completed.error;
+  if (cancelled.error) throw cancelled.error;
 
   return {
     total: total.count ?? 0,
     confirmed: confirmed.count ?? 0,
     completed: completed.count ?? 0,
+    cancelled: cancelled.count ?? 0,
   };
+}
+
+/**
+ * Cash still to collect at Main Gate: every order not yet delivered or
+ * cancelled, any day (pay on delivery, so it's all still owed).
+ */
+export async function getToCollect(): Promise<{ orders: number; amount: number }> {
+  const supabase = await createClient();
+  const rows = await fetchAllRows((from, to) =>
+    supabase
+      .from("orders")
+      .select("total_amount")
+      .not("status", "in", "(delivered,cancelled)")
+      .order("id")
+      .range(from, to),
+  );
+  return { orders: rows.length, amount: rows.reduce((n, r) => n + Number(r.total_amount), 0) };
 }
 
 export type AdminOrder = {
@@ -210,13 +241,11 @@ export async function getConfirmedOrderTimes(): Promise<{ id: string; createdAt:
 }
 
 /**
- * The main dashboard's "Current orders": today's orders (IST) whose
- * delivery slot hasn't ended yet, plus any of today's that still need an
- * admin (pending / confirmed) even past their slot, so nothing actionable
- * disappears. Delivered or cancelled orders drop off once their slot's
- * end time passes — they live on /admin/history (getAdminOrderHistory()).
+ * The main dashboard's board: every order placed today (IST). Delivered
+ * and cancelled ones sit on the Done tab until midnight; every order ever
+ * is on /admin/history (getAdminOrderHistory()).
  */
-export async function getAdminOrders(now: Date = new Date()): Promise<AdminOrder[]> {
+export async function getAdminOrders(): Promise<AdminOrder[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("orders")
@@ -226,13 +255,24 @@ export async function getAdminOrders(now: Date = new Date()): Promise<AdminOrder
     .returns<AdminOrderRow[]>();
 
   if (error) throw error;
-  return (data ?? [])
-    .map(toAdminOrder)
-    .filter((o) => !isFinished(o.status) || !isPastDeliverySlot(o.createdAt, now, o.deliveryMinutes));
+  return (data ?? []).map(toAdminOrder);
 }
 
-function isFinished(status: OrderStatus) {
-  return status === "delivered" || status === "cancelled";
+/** Every order placed in [from, to), oldest first — the Analytics page's CSV export. */
+export async function getAdminOrdersBetween(from: Date, to: Date): Promise<AdminOrder[]> {
+  const supabase = await createClient();
+  const rows = await fetchAllRows((a, b) =>
+    supabase
+      .from("orders")
+      .select(ADMIN_ORDER_COLUMNS)
+      .gte("created_at", from.toISOString())
+      .lt("created_at", to.toISOString())
+      .order("created_at")
+      .order("id")
+      .range(a, b)
+      .returns<AdminOrderRow[]>(),
+  );
+  return rows.map(toAdminOrder);
 }
 
 // Capped so the history page stays cheap to load as order history grows —
@@ -242,15 +282,19 @@ const HISTORY_ORDERS_LIMIT = 2000;
 /** Every order ever placed, most recent first — for the admin order-history page (grouped by day there). */
 export async function getAdminOrderHistory(): Promise<AdminOrder[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("orders")
-    .select(ADMIN_ORDER_COLUMNS)
-    .order("created_at", { ascending: false })
-    .limit(HISTORY_ORDERS_LIMIT)
-    .returns<AdminOrderRow[]>();
-
-  if (error) throw error;
-  return (data ?? []).map(toAdminOrder);
+  // Paged: a single response stops at 1000 rows, whatever .limit() says.
+  const rows = await fetchAllRows(
+    (from, to) =>
+      supabase
+        .from("orders")
+        .select(ADMIN_ORDER_COLUMNS)
+        .order("created_at", { ascending: false })
+        .order("id")
+        .range(from, to)
+        .returns<AdminOrderRow[]>(),
+    HISTORY_ORDERS_LIMIT,
+  );
+  return rows.map(toAdminOrder);
 }
 
 export type AdminUser = {
@@ -263,22 +307,26 @@ export type AdminUser = {
   createdAt: string;
 };
 
-// Capped for the same reason as HISTORY_ORDERS_LIMIT above — keeps the
-// Users page cheap to load as the student base grows.
-const ALL_USERS_LIMIT = 5000;
+// A safety cap only, far above today's numbers. Paged in fetchAllRows():
+// a plain .limit(5000) here gets cut to 1000 rows by PostgREST, so the
+// Users page would stop at "1000 total".
+const ALL_USERS_LIMIT = 20000;
 
 /** Every registered student, most recently joined first — for the admin Users page. */
 export async function getAllUsers(): Promise<AdminUser[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("users")
-    .select("id, full_name, phone, email, registration_number, is_banned, created_at")
-    .order("created_at", { ascending: false })
-    .limit(ALL_USERS_LIMIT);
+  const data = await fetchAllRows(
+    (from, to) =>
+      supabase
+        .from("users")
+        .select("id, full_name, phone, email, registration_number, is_banned, created_at")
+        .order("created_at", { ascending: false })
+        .order("id")
+        .range(from, to),
+    ALL_USERS_LIMIT,
+  );
 
-  if (error) throw error;
-
-  return (data ?? []).map((u) => ({
+  return data.map((u) => ({
     id: u.id,
     fullName: u.full_name,
     phone: u.phone,
@@ -402,8 +450,9 @@ export async function getAdminDishes(): Promise<AdminDish[]> {
   const { data, error } = await supabase
     .from("dishes")
     .select(
-      "id, name, price, is_veg, is_available, sort_order, restaurant_id, restaurants(name), dish_categories(name, sort_order)",
+      "id, name, price, is_veg, is_available, sort_order, restaurant_id, restaurants!inner(name, archived_at), dish_categories(name, sort_order)",
     )
+    .is("restaurants.archived_at", null)
     .returns<
       {
         id: string;

@@ -85,7 +85,7 @@ function istHour(now: Date): number {
 /**
  * Picks one message for right now: the time of day's pool plus the
  * any-time ones. While an offer
- * is on (`offerPct` 20 beats 10), an offer message instead. Skips the
+ * is on (`offerPct` 20 beats 10 beats 5), an offer message instead. Skips the
  * `recent` ids; if that leaves nothing, any of them will do.
  */
 export function pickOpenMessage({
@@ -95,7 +95,7 @@ export function pickOpenMessage({
 }: {
   now?: Date;
   recent: number[];
-  offerPct: 10 | 20 | null;
+  offerPct: 5 | 10 | 20 | null;
 }): OpenMessage {
   let candidates: OpenMessage[];
   if (offerPct) {

@@ -9,20 +9,23 @@ export type AdminMenuRestaurant = {
   isActive: boolean;
   dishCount: number;
   sectionCount: number;
+  /** When the admin removed it ("Remove restaurant"), or null while it's on the app. */
+  archivedAt: string | null;
 };
 
-/** Every restaurant for /admin/menus, with how big its menu is. */
+/** Every restaurant for /admin/menus (removed ones too, for "Add back"), with how big its menu is. */
 export async function getAdminMenuRestaurants(): Promise<AdminMenuRestaurant[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("restaurants")
-    .select("id, name, is_active, dishes(count), dish_categories(count)")
+    .select("id, name, is_active, archived_at, dishes(count), dish_categories(count)")
     .order("name")
     .returns<
       {
         id: string;
         name: string;
         is_active: boolean;
+        archived_at: string | null;
         dishes: { count: number }[];
         dish_categories: { count: number }[];
       }[]
@@ -35,6 +38,7 @@ export async function getAdminMenuRestaurants(): Promise<AdminMenuRestaurant[]> 
     isActive: r.is_active,
     dishCount: r.dishes[0]?.count ?? 0,
     sectionCount: r.dish_categories[0]?.count ?? 0,
+    archivedAt: r.archived_at,
   }));
 }
 
@@ -81,6 +85,7 @@ export async function getAdminMenu(id: string): Promise<AdminMenu | null> {
       .from("restaurants")
       .select("id, name, phone, description, cuisine_tags, is_active, cover_path")
       .eq("id", id)
+      .is("archived_at", null)
       .maybeSingle(),
     supabase.from("dish_categories").select("id, name").eq("restaurant_id", id).order("sort_order").order("name"),
     supabase

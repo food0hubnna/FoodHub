@@ -8,6 +8,7 @@ import { TabBar } from "@/components/nav/tab-bar";
 import { Toaster } from "@/components/toast/toaster";
 import { SiteStatusWatch } from "@/components/site-status/site-status-watch";
 import { StaleDeployGuard } from "@/components/site-status/stale-deploy-guard";
+import { ThemeRouteSync } from "@/components/theme/theme-route-sync";
 import { UploadedPhotos } from "@/components/uploaded-photos";
 import { getUploadedPhotos } from "@/lib/data/uploaded-photos";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
@@ -131,6 +132,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             itself where it shows (TabBar). */}
         <TabBar />
         <Toaster />
+        <ThemeRouteSync />
       </body>
     </html>
   );

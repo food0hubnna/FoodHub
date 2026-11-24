@@ -49,7 +49,14 @@ export async function notifyOrderingOpen(supabase: SupabaseClient): Promise<Open
     if (!claimed || claimed.length === 0) return { sent: false, reason: "cooldown" };
 
     const offers = await getOffers();
-    const offerPct = offers.active.includes("pct20") ? 20 : offers.active.includes("pct10") ? 10 : null;
+    // The biggest percentage on (the bag lets the student pick it).
+    const offerPct = offers.active.includes("pct20")
+      ? 20
+      : offers.active.includes("pct10")
+        ? 10
+        : offers.active.includes("pct5")
+          ? 5
+          : null;
     const recent: number[] = settings.recent_open_messages ?? [];
     const message = pickOpenMessage({ now, recent, offerPct });
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight, Plus } from "lucide-react";
 import { BackToDashboardLink } from "@/components/admin/back-to-dashboard-link";
+import { AddBackRestaurantButton, RemoveRestaurantPicker } from "@/components/admin/menus/remove-restaurant";
 import { RestaurantFormDialog } from "@/components/admin/menus/restaurant-form-dialog";
 import { adminPill } from "@/components/admin/styles";
 import { BlurImage } from "@/components/blur-image";
@@ -10,7 +11,7 @@ import { getRestaurantCoverPhoto } from "@/lib/data/dish-photos";
 import { getUploadedPhotos } from "@/lib/data/uploaded-photos";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Menus · FoodHub Admin" };
+export const metadata: Metadata = { title: "Restaurants & menus · FoodHub Admin" };
 
 /**
  * Every restaurant, each opening its menu editor, plus "Add restaurant".
@@ -18,26 +19,31 @@ export const metadata: Metadata = { title: "Menus · FoodHub Admin" };
  * restaurant, section or dish (photos still go through the developer).
  */
 export default async function AdminMenusPage() {
-  const [restaurants] = await Promise.all([getAdminMenuRestaurants(), getUploadedPhotos()]);
+  const [all] = await Promise.all([getAdminMenuRestaurants(), getUploadedPhotos()]);
+  const restaurants = all.filter((r) => !r.archivedAt);
+  const removed = all.filter((r) => r.archivedAt);
 
   return (
     <>
       <div>
-        <BackToDashboardLink />
-        <h1 className="mt-4 font-heading text-headline font-bold">Menus</h1>
+        <BackToDashboardLink href="/admin/more" label="Back to More" />
+        <h1 className="mt-4 font-heading text-headline font-bold">Restaurants &amp; menus</h1>
         <p className="mt-1 text-muted-foreground">
           Add a restaurant, or open one to add and edit its sections and dishes.
         </p>
       </div>
 
-      <RestaurantFormDialog
-        trigger={
-          <button type="button" className={cn(adminPill, "w-fit")}>
-            <Plus className="size-4" aria-hidden="true" />
-            Add restaurant
-          </button>
-        }
-      />
+      <div className="flex flex-wrap gap-2">
+        <RestaurantFormDialog
+          trigger={
+            <button type="button" className={cn(adminPill, "w-fit")}>
+              <Plus className="size-4" aria-hidden="true" />
+              Add restaurant
+            </button>
+          }
+        />
+        <RemoveRestaurantPicker restaurants={restaurants.map((r) => ({ id: r.id, name: r.name }))} />
+      </div>
 
       <ul className="divide-y overflow-hidden rounded-[1.5rem] border bg-card shadow-card">
         {restaurants.map((r) => {
@@ -71,8 +77,33 @@ export default async function AdminMenusPage() {
       </ul>
 
       <p className="text-sm text-muted-foreground">
-        A restaurant with no dishes stays hidden from students. Turn restaurants on and off from the dashboard.
+        A restaurant with no dishes stays hidden from students. Turn restaurants on and off from Kitchen. To take one off
+        the app, tap Remove restaurant and pick it.
       </p>
+
+      {removed.length > 0 && (
+        <section aria-labelledby="removed-heading">
+          <h2 id="removed-heading" className="font-heading text-title font-bold">
+            Removed restaurants
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Hidden everywhere. Add one back and it returns with its menu, switched off.
+          </p>
+          <ul className="mt-3 divide-y overflow-hidden rounded-[1.5rem] border bg-card shadow-card">
+            {removed.map((r) => (
+              <li key={r.id} className="flex items-center gap-3 px-4 py-3">
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-semibold text-muted-foreground">{r.name}</span>
+                  <span className="block text-sm text-muted-foreground">
+                    {r.dishCount === 1 ? "1 dish" : `${r.dishCount} dishes`}
+                  </span>
+                </span>
+                <AddBackRestaurantButton id={r.id} name={r.name} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </>
   );
 }
