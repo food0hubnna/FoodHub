@@ -17,6 +17,7 @@ export const RESTAURANT_COVER_PHOTOS: Record<string, string> = {
   "A1 Biryani Point": `${COVERS}/a1-biryani-point.jpg`,
   "Spice Magic Biryanis": `${COVERS}/spice-magic.jpg`,
   "Shawarma Hub": `${COVERS}/shawarma-hub.jpg`,
+  "Boss Kitchen": `${COVERS}/boss-kitchen.jpg`,
 };
 
 /** Restaurant name -> { dish name -> thumbnail photo }. */
@@ -53,6 +54,21 @@ export const DISH_PHOTOS: Record<string, Record<string, string>> = {
     "Peri-Peri Chicken Shawarma": `${DISHES}/shawarma-peri-peri.jpg`,
     "Chicken Cheese Shawarma": `${DISHES}/shawarma-chicken-cheese.jpg`,
     "Double Chicken Shawarma": `${DISHES}/shawarma-double-chicken.jpg`,
+  },
+  "Boss Kitchen": {
+    "Veg Noodles": `${DISHES}/boss-veg-noodles.jpg`,
+    "Veg Fried Rice": `${DISHES}/boss-veg-fried-rice.jpg`,
+    "Cashew Fried Rice": `${DISHES}/boss-cashew-fried-rice.jpg`,
+    "Cashew Paneer Fried Rice": `${DISHES}/boss-cashew-paneer-fried-rice.jpg`,
+    "Veg Manchurian": `${DISHES}/boss-veg-manchurian.jpg`,
+    "Veg Paneer": `${DISHES}/boss-veg-paneer.jpg`,
+    "Egg Noodles": `${DISHES}/boss-egg-noodles.jpg`,
+    "Egg Fried Rice": `${DISHES}/boss-egg-fried-rice.jpg`,
+    "Egg Manchurian": `${DISHES}/boss-egg-manchurian.jpg`,
+    "Chicken Noodles": `${DISHES}/boss-chicken-noodles.jpg`,
+    "Chicken Fried Rice": `${DISHES}/boss-chicken-fried-rice.jpg`,
+    "Chicken Manchurian": `${DISHES}/boss-chicken-manchurian.jpg`,
+    "Chilli Chicken (Pepper & Garlic)": `${DISHES}/boss-chilli-chicken.jpg`,
   },
 };
 
@@ -102,6 +118,7 @@ const SIGNATURE_DISHES: Record<string, string[]> = {
   "A1 Biryani Point": ["Chicken Dum Biryani", "Chicken Fry Pieces Biryani"],
   "Spice Magic Biryanis": ["Chicken Fry Combo Pack", "Chicken Dum Bucket", "Chicken 65 Biryani"],
   "Shawarma Hub": ["Chicken Cheese Shawarma", "Peri-Peri Chicken Shawarma", "Chicken Shawarma"],
+  "Boss Kitchen": ["Chilli Chicken (Pepper & Garlic)", "Chicken Noodles", "Veg Manchurian"],
 };
 
 /** A restaurant's hand-picked signature dishes (by name) — also fill Home's "Handi's picks" row. */
