@@ -5,8 +5,15 @@ import { OrderingPausedBanner } from "@/components/home/ordering-paused-banner";
 import { RestaurantList } from "@/components/home/restaurant-list";
 import { SignInWelcomeToast } from "@/components/home/sign-in-welcome-toast";
 import { ThursdayNudge } from "@/components/home/thursday-nudge";
+import { SpecialDishCard } from "@/components/special-dish-card";
 import { YourUsualChip } from "@/components/home/your-usual-chip";
-import { getRestaurantMenuStats, getRestaurants, getSearchableDishes, getThursdaySpecial } from "@/lib/data/restaurants";
+import {
+  getRestaurantMenuStats,
+  getRestaurants,
+  getSearchableDishes,
+  getSpecialDishes,
+  getThursdaySpecial,
+} from "@/lib/data/restaurants";
 import { getOrderingState } from "@/lib/data/settings";
 import { getDishOrderCounts, getTrendingDishes } from "@/lib/data/trending";
 import { getUsualCart } from "@/lib/data/usual";
@@ -52,6 +59,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
     placedOrder,
     liked,
     offers,
+    specials,
   ] = await Promise.all([
     restaurantsPromise,
     menuStatsPromise,
@@ -66,6 +74,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
     hasPlacedOrder(profile.id),
     getLikedDishes(profile.id),
     getOffers(),
+    getSpecialDishes(),
   ]);
   const fromHearts = heartCravings(liked);
   const initials = initialsOf(profile.full_name);
@@ -83,6 +92,9 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           <HomeHeader fullName={profile.full_name} timeOfDay={timeOfDay} avatar={taste.avatar} />
           {usual && orderingEnabled && <YourUsualChip usual={usual} />}
           {thursdaySpecial && <ThursdayNudge special={thursdaySpecial} />}
+          {specials.map((s) => (
+            <SpecialDishCard key={s.dishId} special={s} />
+          ))}
           {!orderingEnabled && <OrderingPausedBanner ordering={ordering} />}
           <RestaurantList
             // A restaurant the admin just added (no dishes yet) stays hidden.

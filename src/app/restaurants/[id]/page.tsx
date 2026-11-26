@@ -5,6 +5,7 @@ import { ViewTransition } from "react";
 import { ArrowLeft } from "lucide-react";
 import { BlurImage } from "@/components/blur-image";
 import { DealBanner } from "@/components/menu/deal-banner";
+import { SpecialDishCard } from "@/components/special-dish-card";
 import { ExpressBadge } from "@/components/express-badge";
 import { HangingSign } from "@/components/handi/hanging-sign";
 import { MenuProgress } from "@/components/menu/menu-progress";
@@ -17,7 +18,7 @@ import { getOffers } from "@/lib/data/offers";
 import { getFavoriteDishId, getTriedDishIds } from "@/lib/data/orders";
 import { menuItems } from "@/lib/menu/portions";
 import { getHighlyReorderedDishIds } from "@/lib/data/reorders";
-import { getRestaurantMenu } from "@/lib/data/restaurants";
+import { getRestaurantMenu, getSpecialDishes } from "@/lib/data/restaurants";
 import { isUuid } from "@/lib/ids";
 import { getOrderingState } from "@/lib/data/settings";
 import { NAV_TRANSITION, REVEAL_ENTER } from "@/lib/nav-transition";
@@ -62,6 +63,7 @@ export default async function RestaurantPage({ params, searchParams }: PageProps
     getOffers(),
     getUploadedPhotos(), // registered before getRestaurantCoverPhoto() below
   ]);
+  const specials = (await getSpecialDishes()).filter((s) => s.restaurantId === id);
   if (!menu) notFound();
 
   const { restaurant, sections } = menu;
@@ -142,6 +144,9 @@ export default async function RestaurantPage({ params, searchParams }: PageProps
             <ArrowLeft className="size-5" />
           </Link>
 
+          {specials.map((s) => (
+            <SpecialDishCard key={s.dishId} special={s} showKitchen={false} />
+          ))}
           {deal && <DealBanner deal={deal} />}
 
           <div className="mt-3">

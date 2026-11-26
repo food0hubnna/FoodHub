@@ -3,6 +3,8 @@ import "server-only";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { isUuid } from "@/lib/ids";
+import { getDishPhoto } from "@/lib/data/dish-photos";
+import { getUploadedPhotos } from "@/lib/data/uploaded-photos";
 import type { Dish, DishCategory, MenuSection, Restaurant } from "./types";
 
 /** All restaurants for the student home screen — open ones first; removed ones (archived_at) never. */
@@ -218,4 +220,57 @@ export const getRestaurantMenu = cache(async function getRestaurantMenu(
   if (uncategorized.length > 0) sections.push({ category: null, dishes: uncategorized, addons: [] });
 
   return { restaurant, sections };
+});
+
+export type SpecialDish = {
+  restaurantId: string;
+  restaurantName: string;
+  dishId: string;
+  dishName: string;
+  price: number;
+  isVeg: boolean;
+  isAvailable: boolean;
+  photo: string | null;
+};
+
+/**
+ * Dishes marked "Evening special" in their note (Balayya Babu Biryani at
+ * Spice Magic), at open, not-removed kitchens, sold out or not: Home and
+ * the menu feature them, saying "back for evening orders" while sold out.
+ * Errors read as "none" so no page breaks over it.
+ */
+export const getSpecialDishes = cache(async (): Promise<SpecialDish[]> => {
+  const supabase = await createClient();
+  const [{ data, error }] = await Promise.all([
+    supabase
+      .from("dishes")
+      .select("id, name, price, is_veg, is_available, restaurant_id, restaurants!inner(name, is_active, archived_at)")
+      .ilike("note", "%evening special%")
+      .eq("restaurants.is_active", true)
+      .is("restaurants.archived_at", null)
+      .order("sort_order")
+      .returns<
+        {
+          id: string;
+          name: string;
+          price: number;
+          is_veg: boolean;
+          is_available: boolean;
+          restaurant_id: string;
+          restaurants: { name: string };
+        }[]
+      >(),
+    getUploadedPhotos(), // registered before getDishPhoto() below
+  ]);
+  if (error || !data) return [];
+  return data.map((d) => ({
+    restaurantId: d.restaurant_id,
+    restaurantName: d.restaurants.name,
+    dishId: d.id,
+    dishName: d.name,
+    price: Number(d.price),
+    isVeg: d.is_veg,
+    isAvailable: d.is_available,
+    photo: getDishPhoto(d.restaurants.name, d.name) ?? null,
+  }));
 });
