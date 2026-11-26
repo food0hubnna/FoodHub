@@ -845,6 +845,31 @@
   .animate-ping-slow {
     animation: ping-slow 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
   }
+  /* Offer applied (cart offers card, cart bar): the card's border glows
+     green twice, the gift/percent tile stamps in with a twist, the saving
+     line gets a band of light, and a "−₹50" chip floats up and away. */
+  .offer-glow {
+    animation: offer-glow 1.6s var(--ease-out-expo) both;
+  }
+  .offer-stamp {
+    animation: offer-stamp 700ms var(--ease-spring) both;
+  }
+  .offer-shine {
+    background: linear-gradient(100deg, var(--success) 35%, var(--confetti-1) 50%, var(--success) 65%) 0 0 / 250% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    animation: offer-shine 1.4s var(--ease-out-expo) 250ms both;
+  }
+  .offer-rise {
+    animation: offer-rise 1.9s var(--ease-out-expo) 200ms both;
+  }
+  .offer-celebration {
+    animation: offer-fade 2.2s linear both;
+  }
+  .deal-pill {
+    animation: deal-pill 3.4s var(--ease-spring) both;
+  }
   /* Deep-linked dish (?dish=): a rose outline that drops in from a little
      further out, pulses once, then fades — "here it is", not a blinking
      alarm. The outline lives on its own property so it never fights the
@@ -1301,5 +1326,101 @@
 @media (prefers-reduced-motion: reduce) {
   .board-fresh {
     animation: none;
+  }
+}
+
+@keyframes offer-glow {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--success) 55%, transparent);
+  }
+  35% {
+    box-shadow: 0 0 0 10px color-mix(in oklab, var(--success) 0%, transparent);
+  }
+  36% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--success) 45%, transparent);
+  }
+  75%,
+  100% {
+    box-shadow: 0 0 0 12px color-mix(in oklab, var(--success) 0%, transparent);
+  }
+}
+
+@keyframes offer-stamp {
+  0% {
+    transform: scale(0.3) rotate(-30deg);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(1.25) rotate(10deg);
+    opacity: 1;
+  }
+  80% {
+    transform: scale(0.95) rotate(-4deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes offer-shine {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+@keyframes offer-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.6);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0) scale(1.1);
+  }
+  30% {
+    transform: translateY(0) scale(1);
+  }
+  75% {
+    opacity: 1;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-28px);
+  }
+}
+
+@keyframes offer-fade {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes deal-pill {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.7);
+  }
+  12% {
+    opacity: 1;
+    transform: translateY(0) scale(1.06);
+  }
+  18% {
+    transform: translateY(0) scale(1);
+  }
+  85% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
   }
 }

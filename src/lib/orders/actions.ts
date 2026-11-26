@@ -9,7 +9,7 @@ import { notifyAdmins } from "@/lib/notifications/send";
 import { formatRupees } from "@/lib/format";
 import { formatOrderNumber } from "@/lib/orders/status";
 import { createClient } from "@/lib/supabase/server";
-import { isOfferKey, type OfferKey } from "@/lib/offers";
+import { isOfferKey, type OrderOfferKey } from "@/lib/offers";
 
 export type PlaceOrderInput = {
   restaurantId: string;
@@ -19,9 +19,11 @@ export type PlaceOrderInput = {
   notes: string;
   contactPhone: string;
   /** The discount the student picked, if any — place_order() decides if it applies. */
-  offer?: OfferKey | null;
+  offer?: OrderOfferKey | null;
   /** The free single biryanis picked for the "buy 3 full" offer. */
   freeItems?: { dishId: string; quantity: number }[];
+  /** Which free gift of the kitchen deal's step (its index), for offer "deal". */
+  dealGift?: number | null;
 };
 
 export type PlaceOrderResult =
@@ -75,7 +77,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   const offer = input.offer ?? null;
   const freeItems = offer === "biryani" ? (input.freeItems ?? []) : [];
   if (
-    (offer !== null && !isOfferKey(offer)) ||
+    (offer !== null && offer !== "deal" && !isOfferKey(offer)) ||
     !Array.isArray(freeItems) ||
     freeItems.some(
       (f) =>
@@ -83,6 +85,10 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     ) ||
     new Set(freeItems.map((f) => f.dishId)).size !== freeItems.length
   ) {
+    return { ok: false, error: "Something's off with your discount. Remove it and try again." };
+  }
+  const dealGift = offer === "deal" ? (input.dealGift ?? null) : null;
+  if (dealGift !== null && (!Number.isInteger(dealGift) || dealGift < 0 || dealGift > 20)) {
     return { ok: false, error: "Something's off with your discount. Remove it and try again." };
   }
   if (offer === "biryani" && freeItems.length === 0) {
@@ -147,6 +153,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     p_notes: notes || null,
     p_offer: offer,
     p_free_items: freeItems.length ? freeItems.map((f) => ({ dish_id: f.dishId, quantity: f.quantity })) : null,
+    p_deal_gift: dealGift,
   });
 
   if (error || typeof orderId !== "string") {
@@ -154,7 +161,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     return {
       ok: false,
       error: PLACE_ORDER_ERRORS[key] ?? GENERIC_ERROR,
-      ...((key === "offer_unavailable" || key === "offer_wrong_restaurant") && { offerEnded: true }),
+      ...((key === "offer_unavailable" || key === "offer_wrong_restaurant" || key === "offer_not_eligible") && { offerEnded: true }),
     };
   }
 
@@ -203,5 +210,5 @@ const PLACE_ORDER_ERRORS: Record<string, string> = {
   // Discount offers (20261015030000_discount_offers.sql).
   offer_unavailable: "That offer just ended, so it's been removed. Check the new total and place your order again.",
   offer_wrong_restaurant: "That offer isn't for this restaurant, so it's been removed. Check the total and place your order again.",
-  offer_not_eligible: "Your bag doesn't qualify for that many free biryanis. Every 3 full biryanis get 1 single free.",
+  offer_not_eligible: "Your bag doesn't qualify for that offer any more. Check the total and place your order again.",
 };

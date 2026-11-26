@@ -26,7 +26,10 @@ export const PERCENT_OFFER_KEYS: PercentOfferKey[] = ["pct5", "pct10", "pct20"];
 export const FULL_BIRYANI_SECTIONS = ["Veg Biryani", "Non-Veg Biryani"];
 export const SINGLE_BIRYANI_SECTION = "Single Biryani";
 
-export const OFFERS: Record<OfferKey, { title: string; short: string; detail: string }> = {
+/** An order's offer: one of the admin's offers above, or the kitchen's own deal. */
+export type OrderOfferKey = OfferKey | "deal";
+
+export const OFFERS: Record<OrderOfferKey, { title: string; short: string; detail: string }> = {
   pct5: { title: "5% off", short: "5% off", detail: "On your whole order" },
   pct10: { title: "10% off", short: "10% off", detail: "On your whole order" },
   pct20: { title: "20% off", short: "20% off", detail: "On your whole order" },
@@ -35,7 +38,72 @@ export const OFFERS: Record<OfferKey, { title: string; short: string; detail: st
     short: "Free single biryani",
     detail: "Pick any single biryani for every 3 full ones",
   },
+  deal: { title: "Kitchen deal", short: "Kitchen deal", detail: "Applied by itself when your bag qualifies" },
 };
+
+/** One step of a kitchen deal: free gifts to pick from, or rupees off. */
+export type DealTier = {
+  min: number;
+  label: string;
+  off?: number;
+  gifts?: { name: string; quantity: number }[];
+};
+
+/** A kitchen's own deal (public.kitchen_deals), while the admin has it on. */
+export type KitchenDeal = {
+  restaurantId: string;
+  title: string;
+  unit: string;
+  units: string;
+  /** Repeat money tiers as often as they fit (11 + 5 + 5 ...). */
+  repeat: boolean;
+  tiers: DealTier[];
+  /** The dishes it counts (the section, or one dish in it), from the server. */
+  dishIds: string[];
+};
+
+/** What a cart earns from a kitchen deal right now. */
+export type DealResult = {
+  count: number;
+  /** Rupees off (money deals). */
+  off: number;
+  /** The gift tier reached (gift deals), or null. */
+  giftTier: DealTier | null;
+  /** The next step up: how many more to add and what it gives, or null at the top. */
+  next: { more: number; tier: DealTier } | null;
+};
+
+/** The same rule as place_order(): gifts = the highest tier once; money + repeat = greedy. */
+export function dealResult(deal: KitchenDeal, lines: { dishId: string; quantity: number }[]): DealResult {
+  const count = lines.reduce((n, l) => n + (deal.dishIds.includes(l.dishId) ? l.quantity : 0), 0);
+  const tiers = [...deal.tiers].sort((a, b) => a.min - b.min);
+  const above = tiers.find((t) => t.min > count) ?? null;
+  const next = above ? { more: above.min - count, tier: above } : null;
+  if (deal.repeat) {
+    let left = count;
+    let off = 0;
+    for (const t of [...tiers].reverse()) {
+      off += Math.floor(left / t.min) * (t.off ?? 0);
+      left %= t.min;
+    }
+    return { count, off, giftTier: null, next };
+  }
+  const reached = [...tiers].reverse().find((t) => t.min <= count) ?? null;
+  if (!reached) return { count, off: 0, giftTier: null, next };
+  if (reached.gifts?.length) return { count, off: 0, giftTier: reached, next };
+  return { count, off: reached.off ?? 0, giftTier: null, next };
+}
+
+/** What a step gives, short: "₹50 off" / "a free Thums Up (1 L)" / "a free gift". */
+export function formatDealReward(tier: DealTier): string {
+  if (tier.gifts?.length) return tier.gifts.length === 1 ? `a free ${tier.gifts[0].name}` : "a free gift";
+  return `₹${tier.off ?? 0} off`;
+}
+
+/** "2 × Mini Dum Biryani" / "Chicken Starter". */
+export function giftName(g: { name: string; quantity: number }): string {
+  return g.quantity > 1 ? `${g.quantity} × ${g.name}` : g.name;
+}
 
 /** How many paid full biryanis earn one free single. */
 export const FULLS_PER_FREE = 3;
@@ -60,6 +128,8 @@ export type OffersState = {
   fullDishIds: string[];
   /** Its single biryanis (SINGLE_BIRYANI_SECTION), while the biryani offer is on. */
   freeChoices: FreeChoice[];
+  /** Kitchen deals the admin has on. */
+  deals: KitchenDeal[];
 };
 
 export const NO_OFFERS: OffersState = {
@@ -69,6 +139,7 @@ export const NO_OFFERS: OffersState = {
   restaurantName: "",
   fullDishIds: [],
   freeChoices: [],
+  deals: [],
 };
 
 export function isOfferKey(value: unknown): value is OfferKey {

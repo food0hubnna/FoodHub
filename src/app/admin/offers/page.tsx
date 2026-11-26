@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { BackToDashboardLink } from "@/components/admin/back-to-dashboard-link";
+import { KitchenDealsCard } from "@/components/admin/kitchen-deals-card";
 import { OffersCard } from "@/components/admin/offers-card";
 import { getAdminRestaurants } from "@/lib/data/admin";
-import { getOffers } from "@/lib/data/offers";
+import { getKitchenDeals, getOffers } from "@/lib/data/offers";
 
 export const metadata: Metadata = { title: "Offers · FoodHub Admin" };
 
@@ -13,7 +14,11 @@ export const metadata: Metadata = { title: "Offers · FoodHub Admin" };
  * offer is on and computes the discount.
  */
 export default async function AdminOffersPage() {
-  const [{ active, restaurantName, excluded }, restaurants] = await Promise.all([getOffers(), getAdminRestaurants()]);
+  const [{ active, restaurantName, excluded }, restaurants, deals] = await Promise.all([
+    getOffers(),
+    getAdminRestaurants(),
+    getKitchenDeals(),
+  ]);
   const where = restaurantName || "the offer restaurant";
 
   return (
@@ -23,10 +28,14 @@ export default async function AdminOffersPage() {
         <h1 className="mt-4 font-heading text-headline font-bold">Offers</h1>
         <p className="mt-1 text-muted-foreground">
           {active.length === 0
-            ? "No offers on. Turn one on and students see an “Apply discount” bar in their cart."
-            : `${active.length} of 3 on. Students pick one per order in their cart.`}
+            ? "No discounts on. Turn one on and it's applied in students' bags by itself."
+            : `${active.length} of 4 on. The best one is applied in each bag by itself; one per order.`}
         </p>
       </div>
+
+      <KitchenDealsCard deals={deals} />
+
+      <h2 className="font-heading text-title font-bold">Discounts</h2>
 
       <OffersCard
         active={active}

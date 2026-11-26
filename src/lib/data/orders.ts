@@ -4,7 +4,7 @@ import { cache } from "react";
 import { istDayKey } from "@/lib/date";
 import { REVIEW_WINDOW_MS } from "@/lib/reviews/limits";
 import { createClient } from "@/lib/supabase/server";
-import type { OfferKey } from "@/lib/offers";
+import type { OrderOfferKey } from "@/lib/offers";
 import { isUuid } from "@/lib/ids";
 import { ACTIVE_STATUSES } from "@/lib/orders/status";
 import type { OrderStatus } from "./types";
@@ -88,7 +88,7 @@ export type OrderDetail = {
   items: OrderItem[];
   dailyNumber: number;
   /** The discount offer used, if any; totalAmount is already after it. */
-  discountOffer: OfferKey | null;
+  discountOffer: OrderOfferKey | null;
   discountAmount: number;
 };
 
@@ -206,7 +206,7 @@ type OrderDetailRow = {
   restaurants: { name: string; phone: string; delivery_minutes: number | null } | null;
   order_items: ({ id: string; dish_name: string; unit_price: number; addons_price: number; quantity: number; subtotal: number; is_free: boolean } & ItemAddonRows)[];
   daily_number: number;
-  discount_offer: OfferKey | null;
+  discount_offer: OrderOfferKey | null;
   discount_amount: number;
   delivered_at: string | null;
   // One-to-one via order_reviews.order_id; PostgREST may return an object or a one-element array.

@@ -247,7 +247,7 @@ export function OrderTracking({
             {initialOrder.discountOffer && (
               <div className="mt-1 flex items-center justify-between gap-3 border-t pt-3 text-sm font-semibold text-success">
                 <span>{OFFERS[initialOrder.discountOffer].short}</span>
-                <span className="tabular-nums">−{formatRupees(initialOrder.discountAmount)}</span>
+                <span className="tabular-nums">{initialOrder.discountAmount > 0 ? `−${formatRupees(initialOrder.discountAmount)}` : "Free gift"}</span>
               </div>
             )}
             {initialOrder.notes && (

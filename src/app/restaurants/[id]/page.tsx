@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ViewTransition } from "react";
 import { ArrowLeft } from "lucide-react";
 import { BlurImage } from "@/components/blur-image";
+import { DealBanner } from "@/components/menu/deal-banner";
 import { ExpressBadge } from "@/components/express-badge";
 import { HangingSign } from "@/components/handi/hanging-sign";
 import { MenuProgress } from "@/components/menu/menu-progress";
@@ -76,6 +77,7 @@ export default async function RestaurantPage({ params, searchParams }: PageProps
     c.kind === "dish" ? triedDishIds.has(c.dish.id) : c.portions.some((p) => triedDishIds.has(p.dish.id)),
   ).length;
   const cover = getRestaurantCoverPhoto(restaurant.name);
+  const deal = active ? (offers.deals.find((d) => d.restaurantId === restaurant.id) ?? null) : null;
   const statusBadge = (
     <span
       className={cn(
@@ -139,6 +141,8 @@ export default async function RestaurantPage({ params, searchParams }: PageProps
           >
             <ArrowLeft className="size-5" />
           </Link>
+
+          {deal && <DealBanner deal={deal} />}
 
           <div className="mt-3">
             <MenuView

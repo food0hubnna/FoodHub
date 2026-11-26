@@ -69,6 +69,28 @@ export async function setOfferRestaurant(
 }
 
 /**
+ * Turns one kitchen's own deal on or off (kitchen_deals.is_on). The cart
+ * applies it by itself once a bag qualifies; place_order() refuses a deal
+ * that's off.
+ */
+export async function setKitchenDealEnabled(restaurantId: string, enabled: boolean): Promise<AdminActionResult> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
+  if (!isUuid(restaurantId) || typeof enabled !== "boolean") return { ok: false, error: "Unknown deal." };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("kitchen_deals")
+    .update({ is_on: enabled, updated_at: new Date().toISOString() })
+    .eq("restaurant_id", restaurantId)
+    .select("restaurant_id");
+  if (error || !data?.length) return { ok: false, error: "Couldn't update the deal. Please try again." };
+
+  revalidatePath("/", "layout"); // the cart on Home and every menu
+  return { ok: true };
+}
+
+/**
  * Campus-wide ordering switch: 'open' or 'closed' (there is no daily
  * schedule). 'closed' also turns every restaurant off, so a close is total —
  * switching back to Open leaves them off, and the admin turns on whichever

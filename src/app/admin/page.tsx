@@ -54,7 +54,10 @@ export default async function AdminPage() {
         openOrders={openOrders.map((o) => ({ due: dueById[o.id] }))}
         activeRestaurants={activeRestaurants}
         totalRestaurants={restaurants.length}
-        offersOn={offers.active.map((k) => OFFERS[k].short)}
+        offersOn={[
+          ...offers.active.map((k) => OFFERS[k].short),
+          ...(offers.deals.length ? [offers.deals.length === 1 ? "1 kitchen deal" : `${offers.deals.length} kitchen deals`] : []),
+        ]}
       >
         <OrderingKillSwitch ordering={ordering} />
       </StatCards>

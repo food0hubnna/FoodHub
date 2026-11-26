@@ -117,7 +117,7 @@ export function OrderSummaryBox({ order, className }: { order: AdminOrder; class
         {order.discountOffer && (
           <li className="flex items-baseline justify-between gap-3 font-semibold text-success">
             <span className="min-w-0">{OFFERS[order.discountOffer].short}</span>
-            <span className="shrink-0 tabular-nums">−{formatRupees(order.discountAmount)}</span>
+            <span className="shrink-0 tabular-nums">{order.discountAmount > 0 ? `−${formatRupees(order.discountAmount)}` : "Free gift"}</span>
           </li>
         )}
       </ul>

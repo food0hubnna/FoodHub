@@ -90,7 +90,7 @@ export function OrderDetailView({ order }: { order: AdminOrderDetail }) {
         {order.discountOffer && (
           <div className="mt-2 flex items-center justify-between gap-3 border-t pt-3 font-semibold text-success">
             <span>Offer · {OFFERS[order.discountOffer].title}</span>
-            <span className="shrink-0 tabular-nums">−{formatRupees(order.discountAmount)}</span>
+            <span className="shrink-0 tabular-nums">{order.discountAmount > 0 ? `−${formatRupees(order.discountAmount)}` : "Free gift"}</span>
           </div>
         )}
         <div className="mt-2 flex items-center justify-between border-t pt-3">

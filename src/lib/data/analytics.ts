@@ -2,7 +2,7 @@ import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
 import { startOfTodayIST } from "@/lib/date";
-import type { OfferKey } from "@/lib/offers";
+import type { OrderOfferKey } from "@/lib/offers";
 
 export type AnalyticsRange = "today" | "7" | "30";
 
@@ -33,7 +33,7 @@ export type Analytics = {
   byHour: { dow: number; hour: number; orders: number }[];
   byRestaurant: { name: string; orders: number; revenue: number }[];
   topDishes: { name: string; quantity: number; students: number }[];
-  offers: { offer: OfferKey; orders: number; discount: number }[];
+  offers: { offer: OrderOfferKey; orders: number; discount: number }[];
   ratings: { name: string; average: number; ratings: number }[];
 };
 
@@ -42,7 +42,7 @@ type Raw = Record<string, unknown> & {
   by_hour?: { dow: number; hour: number; orders: number }[];
   by_restaurant?: { name: string; orders: number; revenue: number | string }[];
   top_dishes?: { name: string; quantity: number | string; students: number }[];
-  offers?: { offer: OfferKey; orders: number; discount: number | string }[];
+  offers?: { offer: OrderOfferKey; orders: number; discount: number | string }[];
   ratings?: { name: string; average: number | string; ratings: number }[];
 };
 

@@ -14,13 +14,15 @@ import { MAX_NOTES } from "@/lib/cart/limits";
 import { spiceNote } from "@/lib/taste/options";
 import { DiscountPicker, type OfferOption } from "@/components/cart/discount-picker";
 import {
+  dealResult,
   discountAmount,
   freeAllowance,
   fullsToNextFree,
+  giftName,
   NO_OFFERS,
   OFFERS,
   offerAppliesTo,
-  type OfferKey,
+  type OrderOfferKey,
   type OffersState,
 } from "@/lib/offers";
 import { cartTotals, clearCart, reconcileCart, useCart, type Cart, lineKey } from "@/lib/cart/store";
@@ -146,8 +148,11 @@ function CartContents({
   const [error, setError] = useState<string | null>(null);
   const [placing, startPlacing] = useTransition();
   const { amount } = cartTotals(cart);
-  const [offer, setOffer] = useState<OfferKey | null>(null);
+  // "auto" = the cart picks the best offer by itself (the default); a key
+  // or null = the student chose (null: no offer).
+  const [choice, setChoice] = useState<OrderOfferKey | null | "auto">("auto");
   const [rawPicks, setRawPicks] = useState<Record<string, number>>({});
+  const [giftIndex, setGiftIndex] = useState(0);
 
   // Offers. Everything below is derived from the
   // cart, so changing the cart can never leave a discount it no longer earns
@@ -166,24 +171,64 @@ function CartContents({
       pickedCount += q;
     }
   }
+  // Nothing picked yet: the first single biryani fills the allowance, so
+  // the offer works without a tap (the student can still swap).
+  if (pickedCount === 0 && allowance > 0 && freeChoices.length > 0) {
+    picks[freeChoices[0].id] = allowance;
+    pickedCount = allowance;
+  }
   const freeItems = freeChoices.filter((c) => picks[c.id]).map((c) => ({ ...c, quantity: picks[c.id] }));
+
+  // The kitchen's own deal (Spice Magic, A1, Shawarma Hub ...).
+  const deal = offers.deals.find((d) => d.restaurantId === cart.restaurantId) ?? null;
+  const dealNow = deal ? dealResult(deal, cart.lines) : null;
+  const gifts = dealNow?.giftTier?.gifts ?? [];
+  const gift = gifts.length ? gifts[Math.min(giftIndex, gifts.length - 1)] : null;
+  const dealUsable = !!dealNow && (dealNow.off > 0 || gift !== null);
+  const dealHint =
+    deal && dealNow?.next
+      ? `Add ${dealNow.next.more} more ${dealNow.next.more === 1 ? deal.unit : deal.units}: ${dealNow.next.tier.label}`
+      : null;
+
   const offerOptions: OfferOption[] = offers.active.map((key) => {
+    const { title, detail } = OFFERS[key];
     if (key !== "biryani") {
       return offerAppliesTo(offers, key, cart.restaurantId)
-        ? { key, saving: discountAmount(key, amount), blocked: null }
-        : { key, saving: 0, blocked: "Not at this restaurant" };
+        ? { key, title, detail, saving: discountAmount(key, amount), blocked: null }
+        : { key, title, detail, saving: 0, blocked: "Not at this restaurant" };
     }
-    if (!offerHere) return { key, saving: 0, blocked: `Only at ${offers.restaurantName}` };
-    if (freeChoices.length === 0) return { key, saving: 0, blocked: "No single biryanis on sale right now" };
+    if (!offerHere) return { key, title, detail, saving: 0, blocked: `Only at ${offers.restaurantName}` };
+    if (freeChoices.length === 0) return { key, title, detail, saving: 0, blocked: "No single biryanis on sale right now" };
     if (allowance === 0) {
       const more = fullsToNextFree(cart.lines, offers.fullDishIds);
-      return { key, saving: 0, blocked: `Add ${more} more full ${more === 1 ? "biryani" : "biryanis"} to unlock` };
+      return { key, title, detail, saving: 0, blocked: `Add ${more} more full ${more === 1 ? "biryani" : "biryanis"} to unlock` };
     }
-    return { key, saving: discountAmount("biryani", amount, freeItems), blocked: null };
+    return { key, title, detail, saving: discountAmount("biryani", amount, freeItems), blocked: null };
   });
-  const appliedOffer = offerOptions.find((o) => o.key === offer && !o.blocked)?.key ?? null;
-  const discount = discountAmount(appliedOffer, amount, freeItems);
+  if (deal && dealNow) {
+    offerOptions.unshift({
+      key: "deal",
+      title: deal.title,
+      detail: gift ? `Free ${giftName(gift)}` : (dealNow.giftTier?.label ?? deal.tiers[0].label),
+      saving: dealNow.off,
+      blocked: dealUsable ? null : `Add ${dealNow.next?.more ?? 0} more ${dealNow.next?.more === 1 ? deal.unit : deal.units}: ${dealNow.next?.tier.label ?? ""}`,
+    });
+  }
+  // Auto: the kitchen deal when it gives a gift or saves the most;
+  // otherwise the biggest saving. A choice that stops working (the bag
+  // changed) falls back to auto.
+  const usableOptions = offerOptions.filter((o) => !o.blocked);
+  const best = [...usableOptions].sort((a, b) => b.saving - a.saving)[0] ?? null;
+  const autoOffer: OrderOfferKey | null =
+    dealUsable && (gift !== null || dealNow!.off >= (best?.saving ?? 0)) ? "deal" : best && best.saving > 0 ? best.key : null;
+  const chosen = choice !== "auto" && choice !== null ? usableOptions.find((o) => o.key === choice)?.key : undefined;
+  const appliedOffer: OrderOfferKey | null = choice === null ? null : (chosen ?? autoOffer);
+  const discount =
+    appliedOffer === "deal" ? Math.min(dealNow?.off ?? 0, amount) : discountAmount(appliedOffer, amount, freeItems);
   const needsPick = appliedOffer === "biryani" && pickedCount === 0;
+  // A new key each time a different offer (or a bigger saving / another
+  // gift) gets applied: the offers card celebrates it.
+  const celebrate = appliedOffer ? `${appliedOffer}|${discount}|${gift ? giftName(gift) : ""}` : null;
   // `amount` is the paid lines only. A free single is added to the item
   // total at its menu price and taken off again as the discount, so the
   // student pays exactly the paid lines — the same sum place_order() makes.
@@ -212,6 +257,7 @@ function CartContents({
         contactPhone,
         offer: appliedOffer,
         freeItems: appliedOffer === "biryani" ? freeItems.map((f) => ({ dishId: f.id, quantity: f.quantity })) : [],
+        dealGift: appliedOffer === "deal" && gift ? gifts.indexOf(gift) : null,
       });
       if (result.ok) {
         clearCart();
@@ -220,7 +266,7 @@ function CartContents({
         return;
       }
       if (result.offerEnded) {
-        setOffer(null);
+        setChoice("auto");
         router.refresh();
       }
       if (result.removedDishIds || result.updatedPrices) {
@@ -283,12 +329,17 @@ function CartContents({
         {offerOptions.length > 0 && (
           <DiscountPicker
             options={offerOptions}
-            selected={offer}
-            onSelect={setOffer}
+            selected={appliedOffer}
+            onSelect={setChoice}
             freeChoices={freeChoices}
             allowance={allowance}
             picks={picks}
             onPick={(dishId, quantity) => setRawPicks({ ...picks, [dishId]: quantity })}
+            gifts={appliedOffer === "deal" ? gifts : []}
+            giftIndex={gift ? gifts.indexOf(gift) : 0}
+            onGift={setGiftIndex}
+            hint={dealHint}
+            celebrate={celebrate}
           />
         )}
 
@@ -299,12 +350,20 @@ function CartContents({
               <dt>Item total</dt>
               <dd className="tabular-nums">{formatRupees(itemTotal)}</dd>
             </div>
+            {appliedOffer === "deal" && gift && (
+              <div key={giftName(gift)} className="animate-pop-in flex justify-between gap-3 font-semibold text-success">
+                <dt className="min-w-0">Free: {giftName(gift)}</dt>
+                <dd className="shrink-0">Free</dd>
+              </div>
+            )}
             {discount > 0 && (
-              <div className="flex justify-between gap-3 font-semibold text-success">
+              <div key={discount} className="animate-pop-in flex justify-between gap-3 font-semibold text-success">
                 <dt className="min-w-0">
                   {appliedOffer === "biryani"
                     ? `Free: ${freeItems.map((f) => (f.quantity > 1 ? `${f.name} × ${f.quantity}` : f.name)).join(", ")}`
-                    : OFFERS[appliedOffer!].short}
+                    : appliedOffer === "deal"
+                      ? (deal?.title ?? OFFERS.deal.short)
+                      : OFFERS[appliedOffer!].short}
                 </dt>
                 <dd className="shrink-0 tabular-nums">−{formatRupees(discount)}</dd>
               </div>

@@ -3,7 +3,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { fetchAllRows } from "@/lib/supabase/fetch-all";
 import { startOfTodayIST } from "@/lib/date";
-import type { OfferKey } from "@/lib/offers";
+import type { OrderOfferKey } from "@/lib/offers";
 import { isUuid } from "@/lib/ids";
 import type { OrderStatus } from "./types";
 
@@ -113,7 +113,7 @@ export type AdminOrder = {
   /** `isFree` = a single biryani given free by the biryani offer (its value is in discountAmount). */
   items: { dishName: string; extras: string[]; quantity: number; subtotal: number; isFree: boolean }[];
   /** The discount offer the student used, if any; totalAmount is already after it. */
-  discountOffer: OfferKey | null;
+  discountOffer: OrderOfferKey | null;
   discountAmount: number;
   dailyNumber: number;
 };
@@ -131,7 +131,7 @@ type AdminOrderRow = {
   restaurants: { name: string; delivery_minutes: number | null } | null;
   users: { full_name: string; is_banned: boolean } | null;
   order_items: { dish_name: string; quantity: number; subtotal: number; is_free: boolean; order_item_addons?: { addon_name: string }[] | null }[];
-  discount_offer: OfferKey | null;
+  discount_offer: OrderOfferKey | null;
   discount_amount: number;
 };
 
@@ -190,7 +190,7 @@ export async function getAdminOrderDetail(id: string): Promise<AdminOrderDetail 
           delivered_at: string | null;
           users: { full_name: string; is_banned: boolean; email: string | null; registration_number: string | null } | null;
           order_items: { id: string; dish_name: string; quantity: number; unit_price: number; addons_price: number; subtotal: number; is_free: boolean; order_item_addons?: { addon_name: string }[] | null }[];
-          discount_offer: OfferKey | null;
+          discount_offer: OrderOfferKey | null;
           discount_amount: number;
         }
       >(),

@@ -14,7 +14,9 @@ export function itemLine(item: { dishName: string; extras?: string[]; quantity: 
 /** "10% off: -₹42" / "Free single biryani: -₹200" — the order's offer, for admin text. */
 export function offerLine(order: Pick<AdminOrder, "discountOffer" | "discountAmount">): string | null {
   if (!order.discountOffer) return null;
-  return `${OFFERS[order.discountOffer].short}: -${formatRupees(order.discountAmount)}`;
+  return order.discountAmount > 0
+    ? `${OFFERS[order.discountOffer].short}: -${formatRupees(order.discountAmount)}`
+    : `${OFFERS[order.discountOffer].short}: free gift`;
 }
 
 /** Each dish on its own line with its price; the offer, then a total line when there's more than one dish or a discount. */
