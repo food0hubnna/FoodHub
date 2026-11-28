@@ -24,6 +24,8 @@ export type Dish = {
   category_id: string | null;
   name: string;
   price: number;
+  /** The price before a price offer that is on; null otherwise. */
+  was_price: number | null;
   is_veg: boolean;
   note: string | null;
   is_available: boolean;

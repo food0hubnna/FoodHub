@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { BackToDashboardLink } from "@/components/admin/back-to-dashboard-link";
 import { KitchenDealsCard } from "@/components/admin/kitchen-deals-card";
 import { OffersCard } from "@/components/admin/offers-card";
+import { PriceOffersCard } from "@/components/admin/price-offers-card";
 import { getAdminRestaurants } from "@/lib/data/admin";
-import { getKitchenDeals, getOffers } from "@/lib/data/offers";
+import { getKitchenDeals, getOffers, getPriceOffers } from "@/lib/data/offers";
 
 export const metadata: Metadata = { title: "Offers · FoodHub Admin" };
 
@@ -14,10 +15,11 @@ export const metadata: Metadata = { title: "Offers · FoodHub Admin" };
  * offer is on and computes the discount.
  */
 export default async function AdminOffersPage() {
-  const [{ active, restaurantName, excluded }, restaurants, deals] = await Promise.all([
+  const [{ active, restaurantName, excluded }, restaurants, deals, priceOffers] = await Promise.all([
     getOffers(),
     getAdminRestaurants(),
     getKitchenDeals(),
+    getPriceOffers(),
   ]);
   const where = restaurantName || "the offer restaurant";
 
@@ -32,6 +34,8 @@ export default async function AdminOffersPage() {
             : `${active.length} of 4 on. The best one is applied in each bag by itself; one per order.`}
         </p>
       </div>
+
+      <PriceOffersCard offers={priceOffers} />
 
       <KitchenDealsCard deals={deals} />
 

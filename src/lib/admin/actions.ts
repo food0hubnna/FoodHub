@@ -90,6 +90,20 @@ export async function setKitchenDealEnabled(restaurantId: string, enabled: boole
   return { ok: true };
 }
 
+/** A flat-price offer's switch: set_price_offer() swaps the dish prices. */
+export async function setPriceOfferEnabled(offerId: string, enabled: boolean): Promise<AdminActionResult> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
+  if (!isUuid(offerId) || typeof enabled !== "boolean") return { ok: false, error: "Unknown offer." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_price_offer", { p_id: offerId, p_on: enabled });
+  if (error) return { ok: false, error: "Couldn't update the offer. Please try again." };
+
+  revalidatePath("/", "layout"); // every menu, Home and the cart
+  return { ok: true };
+}
+
 /**
  * Campus-wide ordering switch: 'open' or 'closed' (there is no daily
  * schedule). 'closed' also turns every restaurant off, so a close is total —

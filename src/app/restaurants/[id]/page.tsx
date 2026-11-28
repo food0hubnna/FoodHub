@@ -5,6 +5,7 @@ import { ViewTransition } from "react";
 import { ArrowLeft } from "lucide-react";
 import { BlurImage } from "@/components/blur-image";
 import { DealBanner } from "@/components/menu/deal-banner";
+import { PriceOfferBanner } from "@/components/menu/price-offer-banner";
 import { SpecialDishCard } from "@/components/special-dish-card";
 import { ExpressBadge } from "@/components/express-badge";
 import { HangingSign } from "@/components/handi/hanging-sign";
@@ -14,7 +15,7 @@ import { getRestaurantCoverPhoto } from "@/lib/data/dish-photos";
 import { getUploadedPhotos } from "@/lib/data/uploaded-photos";
 import { getLikedDishes } from "@/lib/data/favorites";
 import { getTasteProfile } from "@/lib/data/taste";
-import { getOffers } from "@/lib/data/offers";
+import { getOffers, getPriceOffers } from "@/lib/data/offers";
 import { getFavoriteDishId, getTriedDishIds } from "@/lib/data/orders";
 import { menuItems } from "@/lib/menu/portions";
 import { getHighlyReorderedDishIds } from "@/lib/data/reorders";
@@ -63,7 +64,8 @@ export default async function RestaurantPage({ params, searchParams }: PageProps
     getOffers(),
     getUploadedPhotos(), // registered before getRestaurantCoverPhoto() below
   ]);
-  const specials = (await getSpecialDishes()).filter((s) => s.restaurantId === id);
+  const [allSpecials, priceOffers] = await Promise.all([getSpecialDishes(), getPriceOffers()]);
+  const specials = allSpecials.filter((s) => s.restaurantId === id);
   if (!menu) notFound();
 
   const { restaurant, sections } = menu;
@@ -80,6 +82,7 @@ export default async function RestaurantPage({ params, searchParams }: PageProps
   ).length;
   const cover = getRestaurantCoverPhoto(restaurant.name);
   const deal = active ? (offers.deals.find((d) => d.restaurantId === restaurant.id) ?? null) : null;
+  const priceDeals = active ? priceOffers.filter((o) => o.isOn && o.restaurantId === restaurant.id) : [];
   const statusBadge = (
     <span
       className={cn(
@@ -146,6 +149,9 @@ export default async function RestaurantPage({ params, searchParams }: PageProps
 
           {specials.map((s) => (
             <SpecialDishCard key={s.dishId} special={s} showKitchen={false} />
+          ))}
+          {priceDeals.map((o) => (
+            <PriceOfferBanner key={o.id} offer={o} />
           ))}
           {deal && <DealBanner deal={deal} />}
 

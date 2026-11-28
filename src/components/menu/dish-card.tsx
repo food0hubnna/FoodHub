@@ -225,11 +225,13 @@ export function DishCard({
       portions.map((p) => (
         <span key={p.dish.id} className={cn("text-sm whitespace-nowrap", !p.dish.is_available && "line-through")}>
           <span className="text-muted-foreground">{p.label}</span>{" "}
+          <WasPrice dish={p.dish} />
           <span className={cn("font-heading font-bold text-primary", size)}>{formatRupees(p.dish.price)}</span>
         </span>
       ))
     ) : (
       <>
+        <WasPrice dish={dish} />
         <span className={cn("font-heading font-bold text-primary", size)}>{formatRupees(dish.price)}</span>
         {dish.note && <span className="text-xs font-semibold text-rose">{dish.note}</span>}
       </>
@@ -334,5 +336,19 @@ export function DishCard({
         <p className="mt-1 flex flex-wrap items-baseline gap-x-2">{prices("text-lg")}</p>
       </div>
     </article>
+  );
+}
+
+/** The price before a price offer, struck through ("₹180 ₹170"). */
+function WasPrice({ dish }: { dish: { price: number; was_price?: number | null } }) {
+  const was = Number(dish.was_price ?? 0);
+  if (!was || was <= Number(dish.price)) return null;
+  return (
+    <>
+      <s className="text-sm text-muted-foreground tabular-nums">
+        <span className="sr-only">Was </span>
+        {formatRupees(was)}
+      </s>{" "}
+    </>
   );
 }

@@ -171,7 +171,7 @@ export const getRestaurantMenu = cache(async function getRestaurantMenu(
       .returns<DishCategory[]>(),
     supabase
       .from("dishes")
-      .select("id, restaurant_id, category_id, name, price, is_veg, note, is_available, sort_order")
+      .select("id, restaurant_id, category_id, name, price, was_price, is_veg, note, is_available, sort_order")
       .eq("restaurant_id", id)
       .order("sort_order")
       .order("name")

@@ -152,3 +152,54 @@ export const getKitchenDeals = cache(async (): Promise<KitchenDealWithState[]> =
     }))
     .sort((a, b) => a.restaurantName.localeCompare(b.restaurantName));
 });
+
+export type PriceOffer = {
+  id: string;
+  restaurantId: string;
+  restaurantName: string;
+  title: string;
+  price: number;
+  isOn: boolean;
+  dishNames: string[];
+};
+
+/**
+ * Flat-price offers ("Any biryani ₹170"), each with its admin switch. While
+ * one is on, its dishes really cost the offer price (set_price_offer()
+ * swaps dishes.price), so this only drives the menu banner and admin.
+ */
+export const getPriceOffers = cache(async (): Promise<PriceOffer[]> => {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("price_offers")
+    .select("id, restaurant_id, title, price, is_on, dish_ids, restaurants(name, archived_at)")
+    .order("updated_at")
+    .returns<
+      {
+        id: string;
+        restaurant_id: string;
+        title: string;
+        price: number;
+        is_on: boolean;
+        dish_ids: string[];
+        restaurants: { name: string; archived_at: string | null } | null;
+      }[]
+    >();
+  if (error || !data?.length) return [];
+  const rows = data.filter((o) => o.restaurants && !o.restaurants.archived_at);
+  const { data: dishes } = await supabase
+    .from("dishes")
+    .select("id, name")
+    .in("id", rows.flatMap((o) => o.dish_ids))
+    .returns<{ id: string; name: string }[]>();
+  const names = new Map((dishes ?? []).map((d) => [d.id, d.name]));
+  return rows.map((o) => ({
+    id: o.id,
+    restaurantId: o.restaurant_id,
+    restaurantName: o.restaurants?.name ?? "",
+    title: o.title,
+    price: Number(o.price),
+    isOn: o.is_on,
+    dishNames: o.dish_ids.map((id) => names.get(id)).filter((n): n is string => !!n),
+  }));
+});
