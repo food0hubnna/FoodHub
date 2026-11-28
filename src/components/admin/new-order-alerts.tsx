@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, BellOff, BellRing, Loader2, Volume2, VolumeX } from "lucide-react";
+import { NEW_ORDER_EVENT } from "@/components/admin/admin-order-listener";
 import { adminPill } from "@/components/admin/styles";
 import { enablePush, hasPushSubscription, pushState } from "@/lib/notifications/client";
 import {
@@ -11,7 +12,6 @@ import {
   playAdminAlertSound,
   setAdminAlertSoundEnabled,
 } from "@/lib/sound/play";
-import { createClient } from "@/lib/supabase/client";
 import { toast } from "@/lib/toast/store";
 import { cn } from "@/lib/utils";
 
@@ -51,22 +51,21 @@ export function NewOrderAlerts() {
     };
   }, []);
 
+  // AdminOrderListener (admin layout) hears the order and plays the sound;
+  // this just counts them. Any tap in admin arms the sound by itself.
   useEffect(() => {
-    const supabase = createClient();
-    const channel = supabase
-      .channel("admin-new-orders")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, () => {
-        setNewCount((n) => n + 1);
-        if (armedRef.current) playAdminAlertSound();
-        toast.success("New order just came in.");
-        router.refresh();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
+    const count = () => setNewCount((n) => n + 1);
+    const arm = () => {
+      armedRef.current = true;
+      setArmed(true);
     };
-  }, [router]);
+    window.addEventListener(NEW_ORDER_EVENT, count);
+    window.addEventListener("pointerdown", arm, { passive: true, once: true });
+    return () => {
+      window.removeEventListener(NEW_ORDER_EVENT, count);
+      window.removeEventListener("pointerdown", arm);
+    };
+  }, []);
 
   function turnOn() {
     // This click is the gesture that unlocks audio — do it first, so the

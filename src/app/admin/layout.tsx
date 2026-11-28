@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AdminHeader } from "@/components/admin/admin-header";
+import { AdminOrderListener } from "@/components/admin/admin-order-listener";
 import { AdminPasscodeGate } from "@/components/admin/admin-passcode-gate";
 import { AdminTabBar } from "@/components/admin/admin-tab-bar";
 import { requireAdmin } from "@/lib/admin/guard";
@@ -30,6 +31,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         <div className="mt-6 flex flex-col gap-5">{children}</div>
       </main>
       <AdminTabBar />
+      <AdminOrderListener />
     </>
   );
 }
