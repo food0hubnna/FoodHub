@@ -26,6 +26,8 @@ export const DISH_PHOTOS: Record<string, Record<string, string>> = {
     "Chicken Dum Biryani": `${DISHES}/chicken-dum-biryani.jpg`,
     "Chicken Fry Biryani": `${DISHES}/chicken-fry-biryani.jpg`,
     "Mixed Chicken Biryani": `${DISHES}/mixed-chicken-biryani.jpg`,
+    "Chicken Lollipop (4 pcs)": `${DISHES}/al-madina-chicken-lollipop.jpg`,
+    "Chicken Wings (8 pcs)": `${DISHES}/al-madina-chicken-wings.jpg`,
   },
   "A1 Biryani Point": {
     "Chicken Dum Biryani": `${DISHES}/a1-dum-biryani.jpg`,
